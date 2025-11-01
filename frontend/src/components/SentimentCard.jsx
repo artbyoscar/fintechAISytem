@@ -38,7 +38,7 @@ export default function SentimentCard({ sentiment }) {
   return (
     <div className="card animate-fade-in">
       <div className="flex items-center gap-3 mb-4">
-        {getSentimentIcon(sentiment.sentiment_label)}
+        {getSentimentIcon(sentiment.overall_label)}
         <h3 className="text-lg font-semibold text-terminal-text">
           Sentiment Analysis
         </h3>
@@ -48,8 +48,8 @@ export default function SentimentCard({ sentiment }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div>
           <p className="text-xs text-terminal-text-dim mb-2">Sentiment Label</p>
-          <p className={`text-2xl font-bold ${getSentimentColor(sentiment.sentiment_label)}`}>
-            {sentiment.sentiment_label?.toUpperCase()}
+          <p className={`text-2xl font-bold ${getSentimentColor(sentiment.overall_label)}`}>
+            {sentiment.overall_label?.toUpperCase()}
           </p>
         </div>
         <div>

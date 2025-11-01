@@ -1,0 +1,85 @@
+{
+  "success": true,
+  "ticker": "JPM",
+  "company": "JPMorgan Chase & Co.",
+  "analysis_timestamp": "2025-11-01T13:13:43.999190",
+  "earnings_call": {
+    "date": "2025-10-13",
+    "quarter": "Q3 2024",
+    "fiscal_year": 2024,
+    "transcript_length": 1538,
+    "sentences_analyzed": 13
+  },
+  "sentiment_analysis": {
+    "overall_label": "positive",
+    "sentiment_score": 0.7180617341335649,
+    "confidence": 0.8139792019194102,
+    "distribution": {
+      "positive": 84.61538461538461,
+      "negative": 7.6923076923076925,
+      "neutral": 7.6923076923076925
+    },
+    "weighted_scores": {
+      "positive": 0.8139792019194102,
+      "negative": 0.0959174677858453,
+      "neutral": 0.0901033302947444
+    },
+    "key_quotes": [
+      "[POSITIVE] Card\n                Services revenue increased 19% driven by higher card spend and loan growth.",
+      "[POSITIVE] Corporate & Investment Bank revenue was $13.5 billion, with Investment Banking fees up\n                29% as capital markets activity improved.",
+      "[POSITIVE] We're seeing increased CEO confidence\n                and M&A pipeline building.",
+      "[NEGATIVE] Trading revenue of $5.2 billion was strong,\n                though down from exceptional levels last year."
+    ]
+  },
+  "macro_regime": {
+    "regime": "BULL",
+    "confidence": 0.875,
+    "indicators": {
+      "VIX": 18.5,
+      "unemployment_rate": 3.8,
+      "inflation_rate": 3.2,
+      "fed_funds_rate": 5.25,
+      "gdp_growth": 2.8,
+      "sp500_200ma_ratio": 1.05,
+      "fetched_at": "2025-11-01T13:13:43.991159",
+      "data_source": "MOCK"
+    },
+    "reasoning": [
+      "✓ Low volatility (VIX: 18.5) indicates stable bull market",
+      "✓ Strong labor market (Unemployment: 3.8%)",
+      "✓ Inflation near target (Inflation: 3.2%)",
+      "✗ Restrictive Fed policy (Rate: 5.25%)",
+      "✓ Strong economic growth (GDP: 2.8%)"
+    ],
+    "signals": {
+      "bullish": 7,
+      "bearish": 1,
+      "bullish_ratio": 0.875
+    }
+  },
+  "recommendation": {
+    "action": "FAVORABLE",
+    "rationale": "Strong bullish signals across multiple indicators support risk-on positioning",
+    "risk_level": "MODERATE",
+    "suggested_actions": [
+      "Consider increasing equity exposure",
+      "Focus on growth and cyclical sectors",
+      "Earnings beats likely to be rewarded by market",
+      "Look for momentum in high-beta names"
+    ]
+  },
+  "overall_assessment": {
+    "verdict": "STRONG BUY",
+    "reasoning": "Bullish macro regime + positive earnings sentiment = favorable setup",
+    "sentiment_macro_alignment": "ALIGNED - Positive earnings confirm bullish macro environment"
+  },
+  "performance": {
+    "timings": {
+      "fetch_transcript": 5.793571472167969e-05,
+      "sentiment_analysis": 0.47350096702575684,
+      "macro_detection": 0.0001556873321533203,
+      "database_storage": 0.007792949676513672
+    },
+    "total_time": 0
+  }
+}

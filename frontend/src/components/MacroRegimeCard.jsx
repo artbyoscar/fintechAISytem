@@ -103,23 +103,31 @@ export default function MacroRegimeCard({ macro }) {
         </div>
 
         <div>
-          <p className="text-xs text-terminal-text-dim mb-2">Trading Recommendation</p>
-          <div className="flex items-center gap-2">
-            {getRecommendationIcon(macro.recommendation)}
-            <p className={`text-2xl font-bold ${getRecommendationColor(macro.recommendation)}`}>
-              {macro.recommendation}
-            </p>
-          </div>
-          {macro.risk_level && (
-            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-terminal-border rounded-full">
-              <span className="text-xs text-terminal-text-dim">Risk Level:</span>
-              <span className={`text-xs font-semibold ${
-                macro.risk_level === 'LOW' ? 'text-terminal-green' :
-                macro.risk_level === 'HIGH' ? 'text-terminal-red' :
-                'text-terminal-yellow'
-              }`}>
-                {macro.risk_level}
-              </span>
+          <p className="text-xs text-terminal-text-dim mb-2">Regime Signals</p>
+          {macro.signals && (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="text-center p-2 bg-terminal-bg rounded">
+                <p className="text-xs text-terminal-text-dim mb-1">Bullish</p>
+                <p className="text-xl font-bold text-terminal-green">{macro.signals.bullish || 0}</p>
+              </div>
+              <div className="text-center p-2 bg-terminal-bg rounded">
+                <p className="text-xs text-terminal-text-dim mb-1">Bearish</p>
+                <p className="text-xl font-bold text-terminal-red">{macro.signals.bearish || 0}</p>
+              </div>
+            </div>
+          )}
+          {macro.signals?.bullish_ratio && (
+            <div className="mt-2">
+              <div className="flex items-center justify-between text-xs text-terminal-text-dim mb-1">
+                <span>Bull/Bear Ratio</span>
+                <span>{(macro.signals.bullish_ratio * 100).toFixed(0)}%</span>
+              </div>
+              <div className="h-2 bg-terminal-border rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-terminal-green transition-all duration-500"
+                  style={{ width: `${macro.signals.bullish_ratio * 100}%` }}
+                />
+              </div>
             </div>
           )}
         </div>

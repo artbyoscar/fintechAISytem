@@ -1,0 +1,84 @@
+{
+  "success": true,
+  "ticker": "AAPL",
+  "company": "Apple Inc.",
+  "analysis_timestamp": "2025-11-01T12:30:23.952368",
+  "earnings_call": {
+    "date": "2025-10-28",
+    "quarter": "Q4 2024",
+    "fiscal_year": 2024,
+    "transcript_length": 1301,
+    "sentences_analyzed": 10
+  },
+  "sentiment_analysis": {
+    "overall_label": "positive",
+    "sentiment_score": 0.8949019105689732,
+    "confidence": 0.9102006685719983,
+    "distribution": {
+      "positive": 100.0,
+      "negative": 0.0,
+      "neutral": 0.0
+    },
+    "weighted_scores": {
+      "positive": 0.9102006685719983,
+      "negative": 0.015298758003025156,
+      "neutral": 0.07450057342497651
+    },
+    "key_quotes": [
+      "[POSITIVE] Our Services gross margin expanded to 72%, demonstrating\n                the leverage in this high-margin business.",
+      "[POSITIVE] Today we're reporting record quarterly\n                revenue of $89.5 billion, up 6% year over year, driven by strong iPhone 15 demand\n                and continued services growth.",
+      "[POSITIVE] iPhone revenue was $43.8 billion, up 3% despite a challenging comparison to last year's\n                iPhone 14 launch."
+    ]
+  },
+  "macro_regime": {
+    "regime": "BULL",
+    "confidence": 0.875,
+    "indicators": {
+      "VIX": 18.5,
+      "unemployment_rate": 3.8,
+      "inflation_rate": 3.2,
+      "fed_funds_rate": 5.25,
+      "gdp_growth": 2.8,
+      "sp500_200ma_ratio": 1.05,
+      "fetched_at": "2025-11-01T12:30:23.935727",
+      "data_source": "MOCK"
+    },
+    "reasoning": [
+      "✓ Low volatility (VIX: 18.5) indicates stable bull market",
+      "✓ Strong labor market (Unemployment: 3.8%)",
+      "✓ Inflation near target (Inflation: 3.2%)",
+      "✗ Restrictive Fed policy (Rate: 5.25%)",
+      "✓ Strong economic growth (GDP: 2.8%)"
+    ],
+    "signals": {
+      "bullish": 7,
+      "bearish": 1,
+      "bullish_ratio": 0.875
+    }
+  },
+  "recommendation": {
+    "action": "FAVORABLE",
+    "rationale": "Strong bullish signals across multiple indicators support risk-on positioning",
+    "risk_level": "MODERATE",
+    "suggested_actions": [
+      "Consider increasing equity exposure",
+      "Focus on growth and cyclical sectors",
+      "Earnings beats likely to be rewarded by market",
+      "Look for momentum in high-beta names"
+    ]
+  },
+  "overall_assessment": {
+    "verdict": "STRONG BUY",
+    "reasoning": "Bullish macro regime + positive earnings sentiment = favorable setup",
+    "sentiment_macro_alignment": "ALIGNED - Positive earnings confirm bullish macro environment"
+  },
+  "performance": {
+    "timings": {
+      "fetch_transcript": 0.0005190372467041016,
+      "sentiment_analysis": 0.45949363708496094,
+      "macro_detection": 0.0003368854522705078,
+      "database_storage": 0.01620936393737793
+    },
+    "total_time": 0
+  }
+}
