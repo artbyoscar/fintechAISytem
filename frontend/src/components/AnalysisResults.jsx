@@ -144,24 +144,22 @@ export default function AnalysisResults({ result }) {
       )}
 
       {/* Performance Breakdown */}
-      {result.performance && (
+      {result.performance?.timings && (
         <div className="card">
           <h3 className="text-sm font-semibold text-terminal-text-dim mb-3">
             Performance Breakdown
           </h3>
           <div className="space-y-2">
-            {Object.entries(result.performance)
-              .filter(([key]) => key !== 'total_time')
-              .map(([key, value]) => (
-                <div key={key} className="flex items-center justify-between text-sm">
-                  <span className="text-terminal-text-dim capitalize">
-                    {key.replace(/_/g, ' ')}
-                  </span>
-                  <span className="font-mono text-terminal-text">
-                    {typeof value === 'number' ? `${value.toFixed(2)}s` : value}
-                  </span>
-                </div>
-              ))}
+            {Object.entries(result.performance.timings).map(([key, value]) => (
+              <div key={key} className="flex items-center justify-between text-sm">
+                <span className="text-terminal-text-dim capitalize">
+                  {key.replace(/_/g, ' ')}
+                </span>
+                <span className="font-mono text-terminal-text">
+                  {typeof value === 'number' ? `${value.toFixed(3)}s` : value}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       )}
