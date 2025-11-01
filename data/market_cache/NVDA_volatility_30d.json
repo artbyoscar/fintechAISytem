@@ -1,0 +1,12 @@
+{
+  "ticker": "NVDA",
+  "window_days": 30,
+  "volatility": 0.0325,
+  "annualized_volatility": 0.5161,
+  "mean_return": 0.0025,
+  "annualized_return": 0.63,
+  "sharpe_ratio": 1.22,
+  "volatility_class": "HIGH",
+  "period_return": 0.075,
+  "fetched_at": "2025-10-31T18:26:42.705830"
+}
