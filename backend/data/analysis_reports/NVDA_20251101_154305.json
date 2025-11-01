@@ -1,0 +1,91 @@
+{
+  "success": true,
+  "ticker": "NVDA",
+  "company": "NVIDIA Corporation",
+  "analysis_timestamp": "2025-11-01T15:43:05.333572",
+  "earnings_call": {
+    "date": "2025-10-20",
+    "quarter": "Q3 2024",
+    "fiscal_year": 2024,
+    "transcript_length": 1442,
+    "sentences_analyzed": 8
+  },
+  "sentiment_analysis": {
+    "overall_label": "positive",
+    "sentiment_score": 0.7459166316441047,
+    "confidence": 0.7628065502837655,
+    "distribution": {
+      "positive": 75.0,
+      "negative": 0.0,
+      "neutral": 25.0
+    },
+    "weighted_scores": {
+      "positive": 0.7628065502837655,
+      "negative": 0.016889918639660873,
+      "neutral": 0.2203035310765737
+    },
+    "key_quotes": [
+      "[POSITIVE] Gross\n                margins expanded to 75%, reflecting favorable product mix toward higher-margin Data Center\n                products.",
+      "[POSITIVE] Our Gaming segment delivered solid results with revenue of $2.9 billion, up 15% sequentially,\n                benefiting from strong demand for RTX 40-series GPUs. Professional Visualization revenue\n                was $0.4 billion, showing signs of stabilization after several quarters of decline.",
+      "[POSITIVE] Data\n                Center revenue reached a record $14.5 billion, up 279% year over year, driven by surging\n                demand for our Hopper architecture GPUs.\n\n                Demand for our AI computing platforms significantly exceeds supply, and we expect this\n                dynamic to continue into next year."
+    ]
+  },
+  "macro_regime": {
+    "regime": "BULL",
+    "confidence": 0.875,
+    "indicators": {
+      "fetched_at": "2025-11-01T15:43:05.240422",
+      "data_sources": [
+        "Yahoo Finance (VIX)",
+        "Fallback (Unemployment)",
+        "Fallback (Inflation)",
+        "Fallback (Fed Rate)",
+        "Fallback (GDP)",
+        "Fallback (S&P 500)"
+      ],
+      "VIX": 18.5,
+      "unemployment_rate": 3.8,
+      "inflation_rate": 3.2,
+      "fed_funds_rate": 5.25,
+      "gdp_growth": 2.8,
+      "sp500_200ma_ratio": 1.05
+    },
+    "reasoning": [
+      "✓ Low volatility (VIX: 18.5) indicates stable bull market",
+      "✓ Strong labor market (Unemployment: 3.8%)",
+      "✓ Inflation near target (Inflation: 3.2%)",
+      "✗ Restrictive Fed policy (Rate: 5.25%)",
+      "✓ Strong economic growth (GDP: 2.8%)"
+    ],
+    "signals": {
+      "bullish": 7,
+      "bearish": 1,
+      "bullish_ratio": 0.875
+    }
+  },
+  "recommendation": {
+    "action": "FAVORABLE",
+    "rationale": "Strong bullish signals across multiple indicators support risk-on positioning",
+    "risk_level": "MODERATE",
+    "suggested_actions": [
+      "Consider increasing equity exposure",
+      "Focus on growth and cyclical sectors",
+      "Earnings beats likely to be rewarded by market",
+      "Look for momentum in high-beta names"
+    ]
+  },
+  "overall_assessment": {
+    "verdict": "STRONG BUY",
+    "reasoning": "Bullish macro regime + positive earnings sentiment = favorable setup",
+    "sentiment_macro_alignment": "ALIGNED - Positive earnings confirm bullish macro environment"
+  },
+  "performance": {
+    "timings": {
+      "fetch_transcript": 0.0007374286651611328,
+      "sentiment_analysis": 0.35843777656555176,
+      "macro_detection": 0.08270931243896484,
+      "database_storage": 0.010138750076293945
+    },
+    "total_time": 0
+  }
+}

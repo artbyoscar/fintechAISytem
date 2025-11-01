@@ -1,0 +1,94 @@
+{
+  "success": true,
+  "ticker": "NFLX",
+  "company": "Netflix Inc.",
+  "analysis_timestamp": "2025-11-01T15:43:59.020690",
+  "earnings_call": {
+    "date": "2025-10-16",
+    "quarter": "Q3 2024",
+    "fiscal_year": 2024,
+    "transcript_length": 1424,
+    "sentences_analyzed": 11
+  },
+  "sentiment_analysis": {
+    "overall_label": "negative",
+    "sentiment_score": -0.4457350730944504,
+    "confidence": 0.6815960216980889,
+    "distribution": {
+      "positive": 27.27272727272727,
+      "negative": 63.63636363636363,
+      "neutral": 9.090909090909092
+    },
+    "weighted_scores": {
+      "positive": 0.23586094860363846,
+      "negative": 0.6815960216980889,
+      "neutral": 0.08254302969827265
+    },
+    "key_quotes": [
+      "[POSITIVE] Content spending will remain elevated\n                as we invest to improve our slate quality and competitive positioning.",
+      "[POSITIVE] While ad revenue grew, it hasn't offset the ARPU\n                dilution yet.",
+      "[POSITIVE] Operating margin compressed to 19.3% from 22.4% last year due to increased\n                content spending on underperforming titles and marketing costs to drive conversion.",
+      "[NEGATIVE] Revenue per member declined 3% as our lower-priced ad-supported tier cannibalized premium\n                subscriptions more than anticipated.",
+      "[NEGATIVE] Engagement metrics showed concerning trends with watch time per\n                subscriber declining 8%.",
+      "[NEGATIVE] We added 2.4 million paid memberships, significantly missing our\n                forecast of 4.5 million due to softer than expected response to our password sharing\n                initiatives and paid sharing rollout challenges in key markets."
+    ]
+  },
+  "macro_regime": {
+    "regime": "BULL",
+    "confidence": 0.875,
+    "indicators": {
+      "fetched_at": "2025-11-01T15:43:58.891463",
+      "data_sources": [
+        "Yahoo Finance (VIX)",
+        "Fallback (Unemployment)",
+        "Fallback (Inflation)",
+        "Fallback (Fed Rate)",
+        "Fallback (GDP)",
+        "Fallback (S&P 500)"
+      ],
+      "VIX": 18.5,
+      "unemployment_rate": 3.8,
+      "inflation_rate": 3.2,
+      "fed_funds_rate": 5.25,
+      "gdp_growth": 2.8,
+      "sp500_200ma_ratio": 1.05
+    },
+    "reasoning": [
+      "✓ Low volatility (VIX: 18.5) indicates stable bull market",
+      "✓ Strong labor market (Unemployment: 3.8%)",
+      "✓ Inflation near target (Inflation: 3.2%)",
+      "✗ Restrictive Fed policy (Rate: 5.25%)",
+      "✓ Strong economic growth (GDP: 2.8%)"
+    ],
+    "signals": {
+      "bullish": 7,
+      "bearish": 1,
+      "bullish_ratio": 0.875
+    }
+  },
+  "recommendation": {
+    "action": "FAVORABLE",
+    "rationale": "Strong bullish signals across multiple indicators support risk-on positioning",
+    "risk_level": "MODERATE",
+    "suggested_actions": [
+      "Consider increasing equity exposure",
+      "Focus on growth and cyclical sectors",
+      "Earnings beats likely to be rewarded by market",
+      "Look for momentum in high-beta names"
+    ]
+  },
+  "overall_assessment": {
+    "verdict": "NEUTRAL/WATCH",
+    "reasoning": "Bullish macro offset by disappointing earnings",
+    "sentiment_macro_alignment": "DIVERGENT - Negative earnings contradict bullish macro (WARNING)"
+  },
+  "performance": {
+    "timings": {
+      "fetch_transcript": 0.0007505416870117188,
+      "sentiment_analysis": 0.43181347846984863,
+      "macro_detection": 0.11783790588378906,
+      "database_storage": 0.011147737503051758
+    },
+    "total_time": 0
+  }
+}

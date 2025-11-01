@@ -1,0 +1,91 @@
+{
+  "success": true,
+  "ticker": "HD",
+  "company": "The Home Depot Inc.",
+  "analysis_timestamp": "2025-11-01T15:43:37.778250",
+  "earnings_call": {
+    "date": "2025-10-17",
+    "quarter": "Q3 2024",
+    "fiscal_year": 2024,
+    "transcript_length": 1392,
+    "sentences_analyzed": 10
+  },
+  "sentiment_analysis": {
+    "overall_label": "positive",
+    "sentiment_score": 0.8481282505837286,
+    "confidence": 0.8661004606221224,
+    "distribution": {
+      "positive": 90.0,
+      "negative": 0.0,
+      "neutral": 10.0
+    },
+    "weighted_scores": {
+      "positive": 0.8661004606221224,
+      "negative": 0.017972210038393735,
+      "neutral": 0.11592732933948373
+    },
+    "key_quotes": [
+      "[POSITIVE] Pro customer sales outpaced DIY with our Pro ecosystem delivering double-digit growth as\n                contractors increase engagement with our platform.",
+      "[POSITIVE] Operating margin expanded to 14.8% as productivity gains offset wage\n                investments.",
+      "[POSITIVE] Big ticket transactions over $1,000\n                increased 4.2%, indicating healthy project activity."
+    ]
+  },
+  "macro_regime": {
+    "regime": "BULL",
+    "confidence": 0.875,
+    "indicators": {
+      "fetched_at": "2025-11-01T15:43:37.681696",
+      "data_sources": [
+        "Yahoo Finance (VIX)",
+        "Fallback (Unemployment)",
+        "Fallback (Inflation)",
+        "Fallback (Fed Rate)",
+        "Fallback (GDP)",
+        "Fallback (S&P 500)"
+      ],
+      "VIX": 18.5,
+      "unemployment_rate": 3.8,
+      "inflation_rate": 3.2,
+      "fed_funds_rate": 5.25,
+      "gdp_growth": 2.8,
+      "sp500_200ma_ratio": 1.05
+    },
+    "reasoning": [
+      "✓ Low volatility (VIX: 18.5) indicates stable bull market",
+      "✓ Strong labor market (Unemployment: 3.8%)",
+      "✓ Inflation near target (Inflation: 3.2%)",
+      "✗ Restrictive Fed policy (Rate: 5.25%)",
+      "✓ Strong economic growth (GDP: 2.8%)"
+    ],
+    "signals": {
+      "bullish": 7,
+      "bearish": 1,
+      "bullish_ratio": 0.875
+    }
+  },
+  "recommendation": {
+    "action": "FAVORABLE",
+    "rationale": "Strong bullish signals across multiple indicators support risk-on positioning",
+    "risk_level": "MODERATE",
+    "suggested_actions": [
+      "Consider increasing equity exposure",
+      "Focus on growth and cyclical sectors",
+      "Earnings beats likely to be rewarded by market",
+      "Look for momentum in high-beta names"
+    ]
+  },
+  "overall_assessment": {
+    "verdict": "STRONG BUY",
+    "reasoning": "Bullish macro regime + positive earnings sentiment = favorable setup",
+    "sentiment_macro_alignment": "ALIGNED - Positive earnings confirm bullish macro environment"
+  },
+  "performance": {
+    "timings": {
+      "fetch_transcript": 0.0006959438323974609,
+      "sentiment_analysis": 0.4060170650482178,
+      "macro_detection": 0.0849144458770752,
+      "database_storage": 0.011397361755371094
+    },
+    "total_time": 0
+  }
+}

@@ -24,6 +24,7 @@ import uvicorn
 from backend.config import Config
 from backend.database import Database
 from backend.orchestrator import AnalysisOrchestrator
+from backend.agents.market_data import MarketDataAgent
 
 # Fix Windows encoding
 if sys.platform == 'win32':
@@ -48,6 +49,21 @@ class AnalyzeRequest(BaseModel):
         json_schema_extra = {
             "example": {
                 "ticker": "NVDA"
+            }
+        }
+
+
+class MarketDataRequest(BaseModel):
+    """Request model for market data endpoint."""
+    timeframe: str = Field(
+        default="1M",
+        description="Time range for market data (1D, 5D, 1M, 3M, 6M, 1Y, 5Y, MAX)"
+    )
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "timeframe": "1M"
             }
         }
 
@@ -110,6 +126,7 @@ app.add_middleware(
 # These will be initialized on startup
 orchestrator: Optional[AnalysisOrchestrator] = None
 database: Optional[Database] = None
+market_data_agent: Optional[MarketDataAgent] = None
 
 
 # ============================================================================
@@ -152,7 +169,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 @app.on_event("startup")
 async def startup_event():
     """Initialize application on startup."""
-    global orchestrator, database
+    global orchestrator, database, market_data_agent
 
     logger.info("="*80)
     logger.info("FINTECH AI SYSTEM - API STARTUP")
@@ -171,6 +188,11 @@ async def startup_event():
         orchestrator = AnalysisOrchestrator(Config.DB_PATH)
         logger.info("✓ Orchestrator initialized")
         logger.info("✓ FinBERT model loaded")
+
+        # Initialize market data agent
+        logger.info("Initializing market data agent...")
+        market_data_agent = MarketDataAgent(api_key=Config.ALPHA_VANTAGE_KEY)
+        logger.info("✓ Market data agent initialized")
 
         # Validate configuration
         logger.info("\nValidating configuration...")
@@ -544,6 +566,74 @@ async def get_statistics():
         )
 
 
+@app.post(
+    "/market-data/{ticker}",
+    response_model=APIResponse,
+    summary="Get Market Data with Technical Indicators",
+    description="Fetch historical OHLCV data and calculate technical indicators"
+)
+async def get_market_data(ticker: str, request: MarketDataRequest):
+    """
+    Fetch market data with technical indicators for a stock.
+
+    Args:
+        ticker: Stock ticker symbol
+        request: Market data request with timeframe
+
+    Returns:
+        OHLCV data with calculated technical indicators:
+        - SMA (20, 50, 200 periods)
+        - EMA (12, 26 periods)
+        - MACD (12, 26, 9)
+        - RSI (14 period)
+        - Bollinger Bands (20, 2)
+    """
+    if not market_data_agent:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Market data agent not initialized"
+        )
+
+    ticker = ticker.upper()
+    timeframe = request.timeframe.upper()
+
+    # Validate timeframe
+    valid_timeframes = ['1D', '5D', '1M', '3M', '6M', '1Y', '5Y', 'MAX']
+    if timeframe not in valid_timeframes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid timeframe. Must be one of: {', '.join(valid_timeframes)}"
+        )
+
+    try:
+        logger.info(f"Fetching market data for {ticker} ({timeframe})")
+
+        # Fetch data with indicators
+        result = market_data_agent.get_market_data_with_indicators(ticker, timeframe)
+
+        if not result.get('success', False):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=result.get('error', 'Failed to fetch market data')
+            )
+
+        logger.info(f"Market data retrieved for {ticker}: {result['data_points']} points")
+
+        return APIResponse(
+            success=True,
+            data=result
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch market data for {ticker}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch market data: {str(e)}"
+        )
+
+
 @app.get(
     "/",
     response_model=APIResponse,
@@ -563,6 +653,7 @@ async def root():
             "endpoints": {
                 "health": "/health - Health check",
                 "analyze": "/analyze - Analyze company earnings",
+                "market_data": "/market-data/{ticker} - Get stock market data with indicators",
                 "recent": "/recent - Get recent analyses",
                 "companies": "/companies - List all companies",
                 "company": "/company/{ticker} - Get company details",

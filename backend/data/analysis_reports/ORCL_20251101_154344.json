@@ -1,0 +1,91 @@
+{
+  "success": true,
+  "ticker": "ORCL",
+  "company": "Oracle Corporation",
+  "analysis_timestamp": "2025-11-01T15:43:44.943497",
+  "earnings_call": {
+    "date": "2025-10-15",
+    "quarter": "Q1 2025",
+    "fiscal_year": 2025,
+    "transcript_length": 1421,
+    "sentences_analyzed": 12
+  },
+  "sentiment_analysis": {
+    "overall_label": "positive",
+    "sentiment_score": 0.8316797055047258,
+    "confidence": 0.8492423935527835,
+    "distribution": {
+      "positive": 83.33333333333334,
+      "negative": 0.0,
+      "neutral": 16.666666666666664
+    },
+    "weighted_scores": {
+      "positive": 0.8492423935527835,
+      "negative": 0.017562688048057697,
+      "neutral": 0.13319491839915876
+    },
+    "key_quotes": [
+      "[POSITIVE] Applications cloud\n                revenue increased 16% to $3.9 billion with Fusion ERP and HCM delivering consistent growth.",
+      "[POSITIVE] We delivered excellent results with total\n                cloud revenue of $5.1 billion, up 30%, and remaining performance obligations growing 50% to\n                $80 billion.",
+      "[POSITIVE] Operating margin expanded to 44%, up from 39% last year."
+    ]
+  },
+  "macro_regime": {
+    "regime": "BULL",
+    "confidence": 0.875,
+    "indicators": {
+      "fetched_at": "2025-11-01T15:43:44.461089",
+      "data_sources": [
+        "Yahoo Finance (VIX)",
+        "Fallback (Unemployment)",
+        "Fallback (Inflation)",
+        "Fallback (Fed Rate)",
+        "Fallback (GDP)",
+        "Fallback (S&P 500)"
+      ],
+      "VIX": 18.5,
+      "unemployment_rate": 3.8,
+      "inflation_rate": 3.2,
+      "fed_funds_rate": 5.25,
+      "gdp_growth": 2.8,
+      "sp500_200ma_ratio": 1.05
+    },
+    "reasoning": [
+      "✓ Low volatility (VIX: 18.5) indicates stable bull market",
+      "✓ Strong labor market (Unemployment: 3.8%)",
+      "✓ Inflation near target (Inflation: 3.2%)",
+      "✗ Restrictive Fed policy (Rate: 5.25%)",
+      "✓ Strong economic growth (GDP: 2.8%)"
+    ],
+    "signals": {
+      "bullish": 7,
+      "bearish": 1,
+      "bullish_ratio": 0.875
+    }
+  },
+  "recommendation": {
+    "action": "FAVORABLE",
+    "rationale": "Strong bullish signals across multiple indicators support risk-on positioning",
+    "risk_level": "MODERATE",
+    "suggested_actions": [
+      "Consider increasing equity exposure",
+      "Focus on growth and cyclical sectors",
+      "Earnings beats likely to be rewarded by market",
+      "Look for momentum in high-beta names"
+    ]
+  },
+  "overall_assessment": {
+    "verdict": "STRONG BUY",
+    "reasoning": "Bullish macro regime + positive earnings sentiment = favorable setup",
+    "sentiment_macro_alignment": "ALIGNED - Positive earnings confirm bullish macro environment"
+  },
+  "performance": {
+    "timings": {
+      "fetch_transcript": 0.0006079673767089844,
+      "sentiment_analysis": 0.45644593238830566,
+      "macro_detection": 0.47119593620300293,
+      "database_storage": 0.010931968688964844
+    },
+    "total_time": 0
+  }
+}

@@ -25,6 +25,15 @@ export default {
           'red-light': '#ff5252',
           'yellow': '#ffc400',
           'yellow-light': '#ffea00',
+        },
+        // Modern Fintech color palette (Robinhood + Bloomberg hybrid)
+        'fintech': {
+          'bg': '#0D1117',        // Main background
+          'card': '#161B22',      // Card backgrounds
+          'border': 'rgba(255, 255, 255, 0.1)', // Subtle borders
+          'green': '#00D09C',     // Bull/Positive
+          'red': '#FF4D4D',       // Bear/Negative
+          'orange': '#FF6B35',    // Neutral/Action
         }
       },
       fontFamily: {

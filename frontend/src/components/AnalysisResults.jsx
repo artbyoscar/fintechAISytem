@@ -1,5 +1,6 @@
 import SentimentCard from './SentimentCard'
 import MacroRegimeCard from './MacroRegimeCard'
+import StockChart from './StockChart'
 
 /**
  * AnalysisResults Component
@@ -88,6 +89,9 @@ export default function AnalysisResults({ result }) {
 
       {/* Sentiment Analysis Card */}
       {result.sentiment_analysis && <SentimentCard sentiment={result.sentiment_analysis} />}
+
+      {/* Stock Chart */}
+      <StockChart ticker={result.ticker} />
 
       {/* Macro Regime Card */}
       {result.macro_regime && <MacroRegimeCard macro={result.macro_regime} />}

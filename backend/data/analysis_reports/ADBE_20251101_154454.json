@@ -1,0 +1,91 @@
+{
+  "success": true,
+  "ticker": "ADBE",
+  "company": "Adobe Inc.",
+  "analysis_timestamp": "2025-11-01T15:44:54.600150",
+  "earnings_call": {
+    "date": "2025-10-15",
+    "quarter": "Q3 2024",
+    "fiscal_year": 2024,
+    "transcript_length": 1353,
+    "sentences_analyzed": 9
+  },
+  "sentiment_analysis": {
+    "overall_label": "positive",
+    "sentiment_score": 0.8527421992447358,
+    "confidence": 0.8674218133358088,
+    "distribution": {
+      "positive": 88.88888888888889,
+      "negative": 0.0,
+      "neutral": 11.11111111111111
+    },
+    "weighted_scores": {
+      "positive": 0.8674218133358088,
+      "negative": 0.014679614091072995,
+      "neutral": 0.11789857257311827
+    },
+    "key_quotes": [
+      "[POSITIVE] Creative Cloud\n                revenue grew 11% to $3.02 billion driven by strong demand for our Firefly generative AI\n                capabilities integrated across our creative applications.",
+      "[POSITIVE] Operating\n                margin expanded to 37.2% reflecting disciplined expense management and operating leverage.",
+      "[POSITIVE] We delivered record revenue of $4.89 billion,\n                up 10% year over year, with Digital Media revenue of $3.59 billion, up 11%."
+    ]
+  },
+  "macro_regime": {
+    "regime": "BULL",
+    "confidence": 0.875,
+    "indicators": {
+      "fetched_at": "2025-11-01T15:44:54.247957",
+      "data_sources": [
+        "Yahoo Finance (VIX)",
+        "Fallback (Unemployment)",
+        "Fallback (Inflation)",
+        "Fallback (Fed Rate)",
+        "Fallback (GDP)",
+        "Fallback (S&P 500)"
+      ],
+      "VIX": 18.5,
+      "unemployment_rate": 3.8,
+      "inflation_rate": 3.2,
+      "fed_funds_rate": 5.25,
+      "gdp_growth": 2.8,
+      "sp500_200ma_ratio": 1.05
+    },
+    "reasoning": [
+      "✓ Low volatility (VIX: 18.5) indicates stable bull market",
+      "✓ Strong labor market (Unemployment: 3.8%)",
+      "✓ Inflation near target (Inflation: 3.2%)",
+      "✗ Restrictive Fed policy (Rate: 5.25%)",
+      "✓ Strong economic growth (GDP: 2.8%)"
+    ],
+    "signals": {
+      "bullish": 7,
+      "bearish": 1,
+      "bullish_ratio": 0.875
+    }
+  },
+  "recommendation": {
+    "action": "FAVORABLE",
+    "rationale": "Strong bullish signals across multiple indicators support risk-on positioning",
+    "risk_level": "MODERATE",
+    "suggested_actions": [
+      "Consider increasing equity exposure",
+      "Focus on growth and cyclical sectors",
+      "Earnings beats likely to be rewarded by market",
+      "Look for momentum in high-beta names"
+    ]
+  },
+  "overall_assessment": {
+    "verdict": "STRONG BUY",
+    "reasoning": "Bullish macro regime + positive earnings sentiment = favorable setup",
+    "sentiment_macro_alignment": "ALIGNED - Positive earnings confirm bullish macro environment"
+  },
+  "performance": {
+    "timings": {
+      "fetch_transcript": 0.0007305145263671875,
+      "sentiment_analysis": 0.3654191493988037,
+      "macro_detection": 0.34255146980285645,
+      "database_storage": 0.009381532669067383
+    },
+    "total_time": 0
+  }
+}
