@@ -377,7 +377,7 @@ Expected: Indicators section hidden or shows "N/A"
 1. Check StockChart.jsx is importing correctly
 2. Verify ticker prop is passed
 3. Check console for API errors
-4. Verify market data endpoint is running (port 8001)
+4. Verify market data endpoint is running (port 8000)
 
 ### Issue: Colors Wrong
 

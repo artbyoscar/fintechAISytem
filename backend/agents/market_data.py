@@ -22,7 +22,11 @@ class MarketDataAgent:
     Agent responsible for fetching market data and calculating technical indicators.
 
     Uses Alpha Vantage API for real-time and historical stock data.
-    Calculates technical indicators including SMA, EMA, MACD, RSI, and Bollinger Bands.
+    Calculates 15 professional technical indicators:
+    - Trend: SMA (20/50/200), EMA (12/26), MACD, Ichimoku Cloud, Parabolic SAR
+    - Momentum: RSI, Stochastic (%K/%D), CCI, Williams %R, MFI
+    - Volatility: Bollinger Bands, ATR, ADX
+    - Volume: OBV, VWAP
     """
 
     def __init__(self, api_key: Optional[str] = None):
@@ -299,6 +303,36 @@ class MarketDataAgent:
         # Calculate Bollinger Bands
         self._calculate_bollinger_bands(data, 20, 2)
 
+        # Calculate Stochastic Oscillator
+        self._calculate_stochastic(data, 14, 3)
+
+        # Calculate ATR (Average True Range)
+        self._calculate_atr(data, 14)
+
+        # Calculate ADX (Average Directional Index)
+        self._calculate_adx(data, 14)
+
+        # Calculate CCI (Commodity Channel Index)
+        self._calculate_cci(data, 20)
+
+        # Calculate Williams %R
+        self._calculate_williams_r(data, 14)
+
+        # Calculate OBV (On-Balance Volume)
+        self._calculate_obv(data)
+
+        # Calculate VWAP (Volume Weighted Average Price)
+        self._calculate_vwap(data)
+
+        # Calculate Ichimoku Cloud
+        self._calculate_ichimoku(data)
+
+        # Calculate Parabolic SAR
+        self._calculate_parabolic_sar(data)
+
+        # Calculate MFI (Money Flow Index)
+        self._calculate_mfi(data, 14)
+
         return data
 
     def _calculate_sma(self, data: List[Dict], period: int):
@@ -448,6 +482,305 @@ class MarketDataAgent:
             data[i]['bb_middle'] = round(middle, 2)
             data[i]['bb_upper'] = round(middle + (std_dev * std), 2)
             data[i]['bb_lower'] = round(middle - (std_dev * std), 2)
+
+    def _calculate_stochastic(self, data: List[Dict], k_period: int = 14, d_period: int = 3):
+        """Calculate Stochastic Oscillator (%K and %D)."""
+        # Calculate %K
+        for i in range(len(data)):
+            if i < k_period - 1:
+                data[i]['stoch_k'] = None
+                data[i]['stoch_d'] = None
+                continue
+
+            # Get highest high and lowest low over the period
+            highs = [data[j]['high'] for j in range(i - k_period + 1, i + 1)]
+            lows = [data[j]['low'] for j in range(i - k_period + 1, i + 1)]
+
+            highest_high = max(highs)
+            lowest_low = min(lows)
+
+            if highest_high - lowest_low == 0:
+                data[i]['stoch_k'] = 50
+            else:
+                stoch_k = ((data[i]['close'] - lowest_low) / (highest_high - lowest_low)) * 100
+                data[i]['stoch_k'] = round(stoch_k, 2)
+
+        # Calculate %D (SMA of %K)
+        for i in range(len(data)):
+            if i < k_period + d_period - 2:
+                data[i]['stoch_d'] = None
+                continue
+
+            k_values = [data[j]['stoch_k'] for j in range(i - d_period + 1, i + 1)
+                       if data[j]['stoch_k'] is not None]
+
+            if len(k_values) == d_period:
+                data[i]['stoch_d'] = round(sum(k_values) / d_period, 2)
+            else:
+                data[i]['stoch_d'] = None
+
+    def _calculate_atr(self, data: List[Dict], period: int = 14):
+        """Calculate Average True Range (ATR)."""
+        # Calculate True Range for each period
+        for i in range(len(data)):
+            if i == 0:
+                data[i]['tr'] = data[i]['high'] - data[i]['low']
+            else:
+                high_low = data[i]['high'] - data[i]['low']
+                high_close = abs(data[i]['high'] - data[i - 1]['close'])
+                low_close = abs(data[i]['low'] - data[i - 1]['close'])
+                data[i]['tr'] = max(high_low, high_close, low_close)
+
+        # Calculate ATR (SMA of TR for first value, then smoothed)
+        for i in range(len(data)):
+            if i < period - 1:
+                data[i]['atr'] = None
+            elif i == period - 1:
+                atr = sum(data[j]['tr'] for j in range(period)) / period
+                data[i]['atr'] = round(atr, 2)
+            else:
+                prev_atr = data[i - 1]['atr']
+                atr = (prev_atr * (period - 1) + data[i]['tr']) / period
+                data[i]['atr'] = round(atr, 2)
+
+    def _calculate_adx(self, data: List[Dict], period: int = 14):
+        """Calculate Average Directional Index (ADX)."""
+        # Calculate +DM and -DM
+        for i in range(1, len(data)):
+            high_diff = data[i]['high'] - data[i - 1]['high']
+            low_diff = data[i - 1]['low'] - data[i]['low']
+
+            plus_dm = high_diff if high_diff > low_diff and high_diff > 0 else 0
+            minus_dm = low_diff if low_diff > high_diff and low_diff > 0 else 0
+
+            data[i]['plus_dm'] = plus_dm
+            data[i]['minus_dm'] = minus_dm
+
+        # Calculate smoothed DM and TR
+        for i in range(len(data)):
+            if i < period:
+                data[i]['adx'] = None
+                continue
+
+            if i == period:
+                plus_dm_sum = sum(data[j].get('plus_dm', 0) for j in range(1, period + 1))
+                minus_dm_sum = sum(data[j].get('minus_dm', 0) for j in range(1, period + 1))
+                tr_sum = sum(data[j]['tr'] for j in range(period))
+            else:
+                plus_dm_sum = data[i - 1].get('plus_dm_smooth', 0) - (data[i - 1].get('plus_dm_smooth', 0) / period) + data[i].get('plus_dm', 0)
+                minus_dm_sum = data[i - 1].get('minus_dm_smooth', 0) - (data[i - 1].get('minus_dm_smooth', 0) / period) + data[i].get('minus_dm', 0)
+                tr_sum = data[i - 1].get('tr_smooth', 0) - (data[i - 1].get('tr_smooth', 0) / period) + data[i]['tr']
+
+            data[i]['plus_dm_smooth'] = plus_dm_sum
+            data[i]['minus_dm_smooth'] = minus_dm_sum
+            data[i]['tr_smooth'] = tr_sum
+
+            if tr_sum == 0:
+                data[i]['adx'] = None
+                continue
+
+            plus_di = (plus_dm_sum / tr_sum) * 100
+            minus_di = (minus_dm_sum / tr_sum) * 100
+
+            dx = abs(plus_di - minus_di) / (plus_di + minus_di) * 100 if (plus_di + minus_di) > 0 else 0
+
+            if i < period * 2:
+                data[i]['adx'] = round(dx, 2)
+            else:
+                prev_adx = data[i - 1]['adx'] or dx
+                adx = (prev_adx * (period - 1) + dx) / period
+                data[i]['adx'] = round(adx, 2)
+
+    def _calculate_cci(self, data: List[Dict], period: int = 20):
+        """Calculate Commodity Channel Index (CCI)."""
+        # Calculate Typical Price
+        for i in range(len(data)):
+            tp = (data[i]['high'] + data[i]['low'] + data[i]['close']) / 3
+            data[i]['tp'] = tp
+
+        # Calculate CCI
+        for i in range(len(data)):
+            if i < period - 1:
+                data[i]['cci'] = None
+                continue
+
+            # SMA of Typical Price
+            tp_values = [data[j]['tp'] for j in range(i - period + 1, i + 1)]
+            sma_tp = sum(tp_values) / period
+
+            # Mean Deviation
+            mean_dev = sum(abs(tp - sma_tp) for tp in tp_values) / period
+
+            if mean_dev == 0:
+                data[i]['cci'] = 0
+            else:
+                cci = (data[i]['tp'] - sma_tp) / (0.015 * mean_dev)
+                data[i]['cci'] = round(cci, 2)
+
+    def _calculate_williams_r(self, data: List[Dict], period: int = 14):
+        """Calculate Williams %R."""
+        for i in range(len(data)):
+            if i < period - 1:
+                data[i]['williams_r'] = None
+                continue
+
+            highs = [data[j]['high'] for j in range(i - period + 1, i + 1)]
+            lows = [data[j]['low'] for j in range(i - period + 1, i + 1)]
+
+            highest_high = max(highs)
+            lowest_low = min(lows)
+
+            if highest_high - lowest_low == 0:
+                data[i]['williams_r'] = -50
+            else:
+                williams_r = ((highest_high - data[i]['close']) / (highest_high - lowest_low)) * -100
+                data[i]['williams_r'] = round(williams_r, 2)
+
+    def _calculate_obv(self, data: List[Dict]):
+        """Calculate On-Balance Volume (OBV)."""
+        obv = 0
+        for i in range(len(data)):
+            if i == 0:
+                obv = data[i]['volume']
+            else:
+                if data[i]['close'] > data[i - 1]['close']:
+                    obv += data[i]['volume']
+                elif data[i]['close'] < data[i - 1]['close']:
+                    obv -= data[i]['volume']
+                # If close == prev close, OBV stays same
+
+            data[i]['obv'] = obv
+
+    def _calculate_vwap(self, data: List[Dict]):
+        """Calculate Volume Weighted Average Price (VWAP)."""
+        cumulative_tp_volume = 0
+        cumulative_volume = 0
+
+        for i in range(len(data)):
+            tp = (data[i]['high'] + data[i]['low'] + data[i]['close']) / 3
+            tp_volume = tp * data[i]['volume']
+
+            cumulative_tp_volume += tp_volume
+            cumulative_volume += data[i]['volume']
+
+            if cumulative_volume == 0:
+                data[i]['vwap'] = None
+            else:
+                data[i]['vwap'] = round(cumulative_tp_volume / cumulative_volume, 2)
+
+    def _calculate_ichimoku(self, data: List[Dict]):
+        """Calculate Ichimoku Cloud indicators."""
+        # Tenkan-sen (Conversion Line): (9-period high + 9-period low)/2
+        # Kijun-sen (Base Line): (26-period high + 26-period low)/2
+        # Senkou Span A (Leading Span A): (Conversion Line + Base Line)/2
+        # Senkou Span B (Leading Span B): (52-period high + 52-period low)/2
+
+        for i in range(len(data)):
+            # Tenkan-sen (9 periods)
+            if i >= 8:
+                highs_9 = [data[j]['high'] for j in range(i - 8, i + 1)]
+                lows_9 = [data[j]['low'] for j in range(i - 8, i + 1)]
+                data[i]['tenkan_sen'] = round((max(highs_9) + min(lows_9)) / 2, 2)
+            else:
+                data[i]['tenkan_sen'] = None
+
+            # Kijun-sen (26 periods)
+            if i >= 25:
+                highs_26 = [data[j]['high'] for j in range(i - 25, i + 1)]
+                lows_26 = [data[j]['low'] for j in range(i - 25, i + 1)]
+                data[i]['kijun_sen'] = round((max(highs_26) + min(lows_26)) / 2, 2)
+            else:
+                data[i]['kijun_sen'] = None
+
+            # Senkou Span A (plot 26 periods ahead)
+            if data[i]['tenkan_sen'] is not None and data[i]['kijun_sen'] is not None:
+                data[i]['senkou_span_a'] = round((data[i]['tenkan_sen'] + data[i]['kijun_sen']) / 2, 2)
+            else:
+                data[i]['senkou_span_a'] = None
+
+            # Senkou Span B (52 periods)
+            if i >= 51:
+                highs_52 = [data[j]['high'] for j in range(i - 51, i + 1)]
+                lows_52 = [data[j]['low'] for j in range(i - 51, i + 1)]
+                data[i]['senkou_span_b'] = round((max(highs_52) + min(lows_52)) / 2, 2)
+            else:
+                data[i]['senkou_span_b'] = None
+
+    def _calculate_parabolic_sar(self, data: List[Dict], af_start: float = 0.02, af_increment: float = 0.02, af_max: float = 0.2):
+        """Calculate Parabolic SAR (Stop and Reverse)."""
+        if len(data) < 2:
+            return
+
+        # Initialize
+        sar = data[0]['low']
+        ep = data[0]['high']  # Extreme Point
+        af = af_start
+        is_uptrend = True
+
+        data[0]['psar'] = round(sar, 2)
+
+        for i in range(1, len(data)):
+            # Calculate SAR
+            sar = sar + af * (ep - sar)
+
+            # Check for reversal
+            if is_uptrend:
+                if data[i]['low'] < sar:
+                    # Reversal to downtrend
+                    is_uptrend = False
+                    sar = ep
+                    ep = data[i]['low']
+                    af = af_start
+                else:
+                    # Continue uptrend
+                    if data[i]['high'] > ep:
+                        ep = data[i]['high']
+                        af = min(af + af_increment, af_max)
+            else:
+                if data[i]['high'] > sar:
+                    # Reversal to uptrend
+                    is_uptrend = True
+                    sar = ep
+                    ep = data[i]['high']
+                    af = af_start
+                else:
+                    # Continue downtrend
+                    if data[i]['low'] < ep:
+                        ep = data[i]['low']
+                        af = min(af + af_increment, af_max)
+
+            data[i]['psar'] = round(sar, 2)
+
+    def _calculate_mfi(self, data: List[Dict], period: int = 14):
+        """Calculate Money Flow Index (MFI) - Volume-weighted RSI."""
+        # Calculate Typical Price and Raw Money Flow
+        for i in range(len(data)):
+            tp = (data[i]['high'] + data[i]['low'] + data[i]['close']) / 3
+            data[i]['tp'] = tp
+            data[i]['raw_money_flow'] = tp * data[i]['volume']
+
+        # Calculate MFI
+        for i in range(len(data)):
+            if i < period:
+                data[i]['mfi'] = None
+                continue
+
+            positive_flow = 0
+            negative_flow = 0
+
+            for j in range(i - period + 1, i + 1):
+                if j > 0:
+                    if data[j]['tp'] > data[j - 1]['tp']:
+                        positive_flow += data[j]['raw_money_flow']
+                    elif data[j]['tp'] < data[j - 1]['tp']:
+                        negative_flow += data[j]['raw_money_flow']
+
+            if negative_flow == 0:
+                data[i]['mfi'] = 100
+            else:
+                money_ratio = positive_flow / negative_flow
+                mfi = 100 - (100 / (1 + money_ratio))
+                data[i]['mfi'] = round(mfi, 2)
 
     def _filter_by_timeframe(self, data: List[Dict], timeframe: str) -> List[Dict]:
         """Filter data points based on timeframe."""

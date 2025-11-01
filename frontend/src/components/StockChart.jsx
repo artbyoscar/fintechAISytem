@@ -19,7 +19,7 @@ import axios from 'axios'
  * Interactive stock chart with candlesticks, volume, technical indicators, and drawing tools
  * Optimized with data caching, prefetching, and debouncing for fast timeframe switching
  */
-export default function StockChart({ ticker }) {
+export default function StockChart({ ticker, onPriceUpdate }) {
   const [timeRange, setTimeRange] = useState('1M')
   const [showSMA20, setShowSMA20] = useState(true)
   const [showSMA50, setShowSMA50] = useState(true)
@@ -69,7 +69,7 @@ export default function StockChart({ ticker }) {
       const startTime = performance.now()
 
       const response = await axios.post(
-        `http://localhost:8001/market-data/${targetTicker}`,
+        `http://localhost:8000/market-data/${targetTicker}`,
         { timeframe: targetTimeframe },
         {
           headers: {
@@ -194,6 +194,13 @@ export default function StockChart({ ticker }) {
 
     loadData()
   }, [ticker, timeRange, dataCache, fetchMarketData])
+
+  // Notify parent component when price data is available
+  useEffect(() => {
+    if (onPriceUpdate && marketData && marketData.data && marketData.data.length > 0) {
+      onPriceUpdate(marketData.data)
+    }
+  }, [marketData, onPriceUpdate])
 
   // Get raw data from API response or empty array
   const rawData = useMemo(() => {

@@ -248,7 +248,7 @@ return showNewLayout ?
 - Check console for errors
 
 ### Chart not showing
-- **Fix**: Verify backend is running on port 8001
+- **Fix**: Verify backend is running on port 8000
 - Check market data endpoint is working
 
 ### Colors are wrong

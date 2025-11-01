@@ -40,7 +40,7 @@ export default function MacroRegimeCardCompact({ macro }) {
           {macro.regime}
         </p>
         <p className="text-xs text-gray-500">
-          {(macro.confidence * 100).toFixed(0)}% confidence
+          {macro.confidence != null ? (macro.confidence * 100).toFixed(0) : 'N/A'}% confidence
         </p>
       </div>
 
@@ -54,7 +54,7 @@ export default function MacroRegimeCardCompact({ macro }) {
               <span className={`font-mono font-semibold ${
                 value > 0 ? 'text-fintech-green' : value < 0 ? 'text-fintech-red' : 'text-gray-400'
               }`}>
-                {value > 0 ? '+' : ''}{value.toFixed(2)}%
+                {value != null ? `${value > 0 ? '+' : ''}${value.toFixed(2)}%` : 'N/A'}
               </span>
             </div>
           ))}

@@ -2,11 +2,10 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { analyzeCompany, checkHealth, getRecentAnalyses } from './api'
 import TickerSearch from './components/TickerSearch'
-import AnalysisResults from './components/AnalysisResults'
+import AnalysisResults from './components/AnalysisResultsNew'
 import RecentAnalyses from './components/RecentAnalyses'
 import Analytics from './pages/Analytics'
 import ErrorBoundary from './components/ErrorBoundary'
-import TestNewLayout from './TestNewLayout'
 
 // Navigation component to access location
 function Navigation({ darkMode, setDarkMode, apiStatus }) {
@@ -47,16 +46,6 @@ function Navigation({ darkMode, setDarkMode, apiStatus }) {
                 }`}
               >
                 Analytics
-              </Link>
-              <Link
-                to="/test-layout"
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === '/test-layout'
-                    ? 'bg-terminal-orange text-white'
-                    : 'text-terminal-text-dim hover:bg-terminal-border'
-                }`}
-              >
-                New Layout Test
               </Link>
             </nav>
           </div>
@@ -246,7 +235,6 @@ function App() {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/analytics" element={<Analytics />} />
-              <Route path="/test-layout" element={<TestNewLayout />} />
             </Routes>
 
             {/* Footer */}

@@ -83,6 +83,15 @@ export default function StatsCard({ result }) {
           </div>
         ))}
       </div>
+
+      {/* Data timestamp footer */}
+      {result.analysis_timestamp && (
+        <div className="mt-4 pt-4 border-t border-fintech-border">
+          <p className="text-xs text-gray-500 text-center">
+            Data as of {new Date(result.analysis_timestamp).toLocaleString()}
+          </p>
+        </div>
+      )}
     </div>
   )
 }

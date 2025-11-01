@@ -1,0 +1,91 @@
+{
+  "success": true,
+  "ticker": "GOOGL",
+  "company": "Alphabet Inc.",
+  "analysis_timestamp": "2025-11-01T16:13:15.277771",
+  "earnings_call": {
+    "date": "2025-10-24",
+    "quarter": "Q3 2024",
+    "fiscal_year": 2024,
+    "transcript_length": 1259,
+    "sentences_analyzed": 9
+  },
+  "sentiment_analysis": {
+    "overall_label": "positive",
+    "sentiment_score": 0.8411507034752361,
+    "confidence": 0.8569804628439665,
+    "distribution": {
+      "positive": 88.88888888888889,
+      "negative": 0.0,
+      "neutral": 11.11111111111111
+    },
+    "weighted_scores": {
+      "positive": 0.8569804628439665,
+      "negative": 0.015829759368730295,
+      "neutral": 0.12718977778730328
+    },
+    "key_quotes": [
+      "[POSITIVE] Google Cloud revenue grew 22% to $8.4 billion with operating\n                margin turning positive at 3%, a significant milestone demonstrating the operating leverage\n                in this business.",
+      "[POSITIVE] Google Search\n                and other advertising revenues were $44.0 billion, up 11%, with continued strength in retail\n                vertical and growing adoption of Performance Max campaigns that leverage our AI capabilities.",
+      "[POSITIVE] Alphabet delivered strong third quarter results with revenues of\n                $76.7 billion, up 11% year over year, and operating margin expansion to 28%."
+    ]
+  },
+  "macro_regime": {
+    "regime": "BULL",
+    "confidence": 0.875,
+    "indicators": {
+      "fetched_at": "2025-11-01T16:13:14.851968",
+      "data_sources": [
+        "Yahoo Finance (VIX)",
+        "Fallback (Unemployment)",
+        "Fallback (Inflation)",
+        "Fallback (Fed Rate)",
+        "Fallback (GDP)",
+        "Fallback (S&P 500)"
+      ],
+      "VIX": 18.5,
+      "unemployment_rate": 3.8,
+      "inflation_rate": 3.2,
+      "fed_funds_rate": 5.25,
+      "gdp_growth": 2.8,
+      "sp500_200ma_ratio": 1.05
+    },
+    "reasoning": [
+      "✓ Low volatility (VIX: 18.5) indicates stable bull market",
+      "✓ Strong labor market (Unemployment: 3.8%)",
+      "✓ Inflation near target (Inflation: 3.2%)",
+      "✗ Restrictive Fed policy (Rate: 5.25%)",
+      "✓ Strong economic growth (GDP: 2.8%)"
+    ],
+    "signals": {
+      "bullish": 7,
+      "bearish": 1,
+      "bullish_ratio": 0.875
+    }
+  },
+  "recommendation": {
+    "action": "FAVORABLE",
+    "rationale": "Strong bullish signals across multiple indicators support risk-on positioning",
+    "risk_level": "MODERATE",
+    "suggested_actions": [
+      "Consider increasing equity exposure",
+      "Focus on growth and cyclical sectors",
+      "Earnings beats likely to be rewarded by market",
+      "Look for momentum in high-beta names"
+    ]
+  },
+  "overall_assessment": {
+    "verdict": "STRONG BUY",
+    "reasoning": "Bullish macro regime + positive earnings sentiment = favorable setup",
+    "sentiment_macro_alignment": "ALIGNED - Positive earnings confirm bullish macro environment"
+  },
+  "performance": {
+    "timings": {
+      "fetch_transcript": 0.0006990432739257812,
+      "sentiment_analysis": 0.39375782012939453,
+      "macro_detection": 0.4146292209625244,
+      "database_storage": 0.01088571548461914
+    },
+    "total_time": 0
+  }
+}

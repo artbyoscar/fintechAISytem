@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import StatsCard from './StatsCard'
 import SentimentCardCompact from './SentimentCardCompact'
 import MacroRegimeCardCompact from './MacroRegimeCardCompact'
@@ -9,11 +10,31 @@ import StockChart from './StockChart'
  * 70/30 split: Chart hero + Sidebar
  */
 export default function AnalysisResultsNew({ result }) {
+  const [currentPrice, setCurrentPrice] = useState(null)
+  const [priceChange, setPriceChange] = useState(null)
+
   if (!result) return null
 
-  // Calculate price change for header
-  const priceChange = result.sentiment_analysis?.sentiment_score || 0
-  const isPositive = priceChange > 0
+  // Callback to receive price data from StockChart
+  const handlePriceUpdate = (priceData) => {
+    if (priceData && priceData.length > 0) {
+      const latest = priceData[priceData.length - 1]
+      const previous = priceData[priceData.length - 2] || latest
+
+      setCurrentPrice(latest.close)
+
+      const change = latest.close - previous.close
+      const changePercent = (change / previous.close) * 100
+
+      setPriceChange({
+        amount: change,
+        percent: changePercent
+      })
+    }
+  }
+
+  // Calculate price change based on available data
+  const isPositive = priceChange ? priceChange.percent > 0 : (result.sentiment_analysis?.sentiment_score || 0) > 0
 
   return (
     <div className="min-h-screen bg-fintech-bg">
@@ -32,15 +53,22 @@ export default function AnalysisResultsNew({ result }) {
               )}
             </div>
 
-            {/* Price Display (Mock - would come from market data) */}
+            {/* Price Display */}
             <div className="flex items-baseline gap-4">
               <div className="text-right">
                 <div className="text-2xl font-bold text-white font-mono">
-                  $XXX.XX
+                  {currentPrice != null ? `$${currentPrice.toFixed(2)}` : 'Loading...'}
                 </div>
-                <div className={`text-sm font-semibold ${isPositive ? 'text-fintech-green' : 'text-fintech-red'}`}>
-                  {isPositive ? '+' : ''}{(priceChange * 100).toFixed(2)}%
-                </div>
+                {priceChange && (
+                  <div className={`text-sm font-semibold ${priceChange.percent >= 0 ? 'text-fintech-green' : 'text-fintech-red'}`}>
+                    {priceChange.percent >= 0 ? '+' : ''}${priceChange.amount.toFixed(2)} ({priceChange.percent >= 0 ? '+' : ''}{priceChange.percent.toFixed(2)}%)
+                  </div>
+                )}
+                {!priceChange && currentPrice == null && (
+                  <div className="text-xs text-gray-500">
+                    Fetching price...
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -95,7 +123,7 @@ export default function AnalysisResultsNew({ result }) {
         <div className="flex gap-6">
           {/* Left Column: Chart (70%) */}
           <div className="flex-[7] min-w-0">
-            <StockChart ticker={result.ticker} />
+            <StockChart ticker={result.ticker} onPriceUpdate={handlePriceUpdate} />
 
             {/* Trading Recommendation Below Chart */}
             {result.recommendation && (

@@ -40,7 +40,7 @@ export default function SentimentCardCompact({ sentiment }) {
           {sentiment.overall_label?.toUpperCase()}
         </p>
         <p className="text-xs text-gray-500">
-          {(sentiment.confidence * 100).toFixed(0)}% confidence
+          {sentiment.confidence != null ? (sentiment.confidence * 100).toFixed(0) : 'N/A'}% confidence
         </p>
       </div>
 
@@ -60,7 +60,7 @@ export default function SentimentCardCompact({ sentiment }) {
         <div className="flex justify-between text-xs text-gray-600 mt-1">
           <span>-1.0</span>
           <span className="font-mono text-fintech-orange">
-            {sentiment.sentiment_score.toFixed(2)}
+            {sentiment.sentiment_score != null ? sentiment.sentiment_score.toFixed(2) : 'N/A'}
           </span>
           <span>+1.0</span>
         </div>
@@ -76,11 +76,11 @@ export default function SentimentCardCompact({ sentiment }) {
                 <div className="w-16 h-1.5 bg-fintech-bg rounded-full overflow-hidden">
                   <div
                     className={`h-full ${getSentimentColor(label)} bg-current`}
-                    style={{ width: `${score * 100}%` }}
+                    style={{ width: `${score != null ? score * 100 : 0}%` }}
                   />
                 </div>
                 <span className="text-gray-400 font-mono w-10 text-right">
-                  {(score * 100).toFixed(0)}%
+                  {score != null ? (score * 100).toFixed(0) : 'N/A'}%
                 </span>
               </div>
             </div>
