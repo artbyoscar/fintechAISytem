@@ -73,3 +73,9 @@ uvicorn==0.38.0
 websockets==15.0.1
 yarl==1.22.0
 yfinance==0.2.66
+
+# Testing
+pytest==8.3.4
+pytest-cov==6.0.0
+pytest-asyncio==0.25.2
+httpx==0.28.5
