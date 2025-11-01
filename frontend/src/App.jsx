@@ -5,6 +5,7 @@ import TickerSearch from './components/TickerSearch'
 import AnalysisResults from './components/AnalysisResults'
 import RecentAnalyses from './components/RecentAnalyses'
 import Analytics from './pages/Analytics'
+import ErrorBoundary from './components/ErrorBoundary'
 
 // Navigation component to access location
 function Navigation({ darkMode, setDarkMode, apiStatus }) {
@@ -112,22 +113,50 @@ function Dashboard() {
   const handleAnalyze = async (ticker) => {
     if (!ticker.trim()) return
 
+    console.log('🎯 Starting analysis for ticker:', ticker)
     setLoading(true)
     setError(null)
     setResult(null)
 
     try {
+      console.log('📡 Calling analyzeCompany API...')
       const response = await analyzeCompany(ticker.toUpperCase())
+
+      console.log('📦 Full API Response:', response)
+
+      // Defensive null checks
+      if (!response) {
+        console.error('❌ Response is null/undefined')
+        setError('No response from API')
+        return
+      }
+
       if (response.success) {
+        console.log('✅ Analysis successful!')
+        console.log('📊 Result data structure:', {
+          hasSentiment: !!response.data?.sentiment_analysis,
+          hasMacro: !!response.data?.macro_regime,
+          hasRecommendation: !!response.data?.recommendation,
+          data: response.data
+        })
+
         setResult(response.data)
         loadRecentAnalyses() // Refresh recent list
       } else {
+        console.error('❌ Analysis failed:', response.error)
         setError(response.error || 'Analysis failed')
       }
     } catch (err) {
+      console.error('💥 Exception during analysis:', err)
+      console.error('Error details:', {
+        message: err.message,
+        stack: err.stack,
+        name: err.name
+      })
       setError(err.message || 'Failed to analyze company')
     } finally {
       setLoading(false)
+      console.log('🏁 Analysis complete')
     }
   }
 
@@ -195,36 +224,38 @@ function App() {
   }
 
   return (
-    <Router>
-      <div className={darkMode ? 'dark' : ''}>
-        <div className="min-h-screen bg-terminal-bg">
-          {/* Header with Navigation */}
-          <Navigation darkMode={darkMode} setDarkMode={setDarkMode} apiStatus={apiStatus} />
+    <ErrorBoundary>
+      <Router>
+        <div className={darkMode ? 'dark' : ''}>
+          <div className="min-h-screen bg-terminal-bg">
+            {/* Header with Navigation */}
+            <Navigation darkMode={darkMode} setDarkMode={setDarkMode} apiStatus={apiStatus} />
 
-          {/* Routes */}
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/analytics" element={<Analytics />} />
-          </Routes>
+            {/* Routes */}
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/analytics" element={<Analytics />} />
+            </Routes>
 
-          {/* Footer */}
-          <footer className="border-t border-terminal-border bg-terminal-bg-light mt-12">
-            <div className="container mx-auto px-6 py-4">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-terminal-text-dim">
-                <div>
-                  Fintech AI System - Powered by FinBERT & Real-time Market Data
-                </div>
-                <div className="flex items-center gap-4">
-                  <span>Backend: FastAPI</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span>Frontend: React + Vite</span>
+            {/* Footer */}
+            <footer className="border-t border-terminal-border bg-terminal-bg-light mt-12">
+              <div className="container mx-auto px-6 py-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-terminal-text-dim">
+                  <div>
+                    Fintech AI System - Powered by FinBERT & Real-time Market Data
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span>Backend: FastAPI</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span>Frontend: React + Vite</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </footer>
+            </footer>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </ErrorBoundary>
   )
 }
 
