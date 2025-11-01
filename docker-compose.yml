@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # Backend FastAPI service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fintech-ai-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - FRED_API_KEY=${FRED_API_KEY:-your_fred_api_key_here}
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+    volumes:
+      # Persist database and analysis data
+      - ./data:/app/data
+      # Mount alert templates
+      - ./data/alert_templates:/app/data/alert_templates
+    restart: unless-stopped
+    networks:
+      - fintech-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend React + Vite (development mode)
+  # For production, build static files and serve with nginx
+  frontend:
+    image: node:18-alpine
+    container_name: fintech-ai-frontend
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host"
+    depends_on:
+      - backend
+    networks:
+      - fintech-network
+    restart: unless-stopped
+
+  # Nginx reverse proxy (optional, for production)
+  nginx:
+    image: nginx:alpine
+    container_name: fintech-ai-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+    networks:
+      - fintech-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+networks:
+  fintech-network:
+    driver: bridge
+
+volumes:
+  data:
+    driver: local

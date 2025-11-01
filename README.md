@@ -346,6 +346,268 @@ Combines sentiment + macro regime:
 
 ---
 
+## Deployment
+
+### Docker Deployment (Recommended for Production)
+
+#### Prerequisites
+- Docker 20.10+
+- Docker Compose 2.0+
+- 4GB+ RAM available
+- FRED API key ([Get one free](https://fred.stlouisfed.org/docs/api/api_key.html))
+
+#### Quick Deploy
+
+**Step 1: Configure Environment**
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit .env and add your FRED API key
+# FRED_API_KEY=your_actual_api_key_here
+```
+
+**Step 2: Deploy with Script**
+```bash
+# Make deploy script executable (Linux/Mac)
+chmod +x deploy.sh
+
+# Interactive menu
+./deploy.sh
+
+# Or use direct commands:
+./deploy.sh dev      # Deploy development environment
+./deploy.sh prod     # Deploy production environment
+./deploy.sh build    # Build Docker images only
+./deploy.sh test     # Run tests
+./deploy.sh logs     # View container logs
+./deploy.sh status   # Check service health
+./deploy.sh clean    # Cleanup containers and images
+./deploy.sh stop     # Stop all services
+```
+
+**Step 3: Access Application**
+
+Development mode:
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+- Frontend: http://localhost:3000
+
+Production mode (with nginx):
+- Application: http://localhost
+- API: http://localhost/api
+
+#### Manual Docker Commands
+
+```bash
+# Development (backend + frontend dev servers)
+docker-compose up -d
+
+# Production (with nginx reverse proxy)
+docker-compose --profile production up -d
+
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Stop services
+docker-compose down
+
+# Rebuild after code changes
+docker-compose up -d --build
+```
+
+#### Docker Services
+
+**Backend Service**
+- Image: `fintech-ai-backend:latest`
+- Port: 8000
+- Workers: 2 (configurable via `UVICORN_WORKERS`)
+- Health check: Every 30s
+- Restart policy: unless-stopped
+
+**Frontend Service**
+- Image: `node:18-alpine`
+- Port: 3000 (dev) or served via nginx (prod)
+- Hot reload enabled in dev mode
+
+**Nginx Service** (production only)
+- Image: `nginx:alpine`
+- Port: 80
+- Features: Gzip compression, static asset caching, API proxying
+- Configuration: `nginx.conf`
+
+#### Environment Variables
+
+Required:
+```bash
+FRED_API_KEY=your_key          # FRED API for macro data
+```
+
+Optional:
+```bash
+ENVIRONMENT=production         # Environment mode
+LOG_LEVEL=INFO                 # Logging verbosity
+VITE_API_URL=http://localhost:8000  # Backend URL for frontend
+UVICORN_WORKERS=2              # Number of API workers
+CORS_ORIGINS=http://localhost:3000  # Allowed CORS origins
+RATE_LIMIT=100                 # API rate limit (req/min)
+```
+
+Email alerts (optional):
+```bash
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+SMTP_FROM=alerts@fintechai.com
+```
+
+#### Data Persistence
+
+Docker volumes automatically persist:
+- SQLite database: `./data/fintech_ai.db`
+- Analysis reports: `./data/analysis_reports/`
+- Alert history: `./data/alerts/`
+- Backtest results: `./data/backtests/`
+- Cache files: `./data/*_cache/`
+
+#### Production Checklist
+
+Before deploying to production:
+
+- [ ] Set `ENVIRONMENT=production` in `.env`
+- [ ] Configure real FRED API key
+- [ ] Update `CORS_ORIGINS` with your domain
+- [ ] Enable rate limiting with `RATE_LIMIT`
+- [ ] Configure SMTP for email alerts (optional)
+- [ ] Set up SSL/TLS certificates for HTTPS
+- [ ] Configure firewall rules
+- [ ] Set up monitoring and logging
+- [ ] Create database backups strategy
+- [ ] Test health checks: `curl http://localhost:8000/health`
+
+#### Troubleshooting
+
+**Backend won't start:**
+```bash
+# Check logs
+docker-compose logs backend
+
+# Common issues:
+# - Missing FRED_API_KEY in .env
+# - Port 8000 already in use
+# - Insufficient memory (need 2GB+)
+```
+
+**Frontend build fails:**
+```bash
+# Check Node.js version (need 18+)
+docker-compose logs frontend
+
+# Clear cache and rebuild
+docker-compose down
+docker-compose up --build
+```
+
+**Database errors:**
+```bash
+# Reset database (WARNING: deletes all data)
+rm data/fintech_ai.db
+docker-compose restart backend
+```
+
+**Performance issues:**
+```bash
+# Increase Uvicorn workers
+# In .env: UVICORN_WORKERS=4
+
+# Check resource usage
+docker stats
+```
+
+### Traditional Deployment (Without Docker)
+
+For local development without Docker:
+
+**Step 1: Backend Setup**
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/Scripts/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your API keys
+
+# Run backend
+python run_api.py
+```
+
+**Step 2: Frontend Setup**
+```bash
+# In a new terminal
+cd frontend
+npm install
+
+# Configure API URL
+# Create .env in frontend/ with:
+# VITE_API_URL=http://localhost:8000
+
+# Run frontend
+npm run dev
+```
+
+**Step 3: Access**
+- Backend: http://localhost:8000
+- Frontend: http://localhost:3000
+
+### Cloud Deployment
+
+#### AWS ECS/Fargate
+```bash
+# Build and push to ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin YOUR_ECR_URI
+docker build -t fintech-ai-backend .
+docker tag fintech-ai-backend:latest YOUR_ECR_URI/fintech-ai-backend:latest
+docker push YOUR_ECR_URI/fintech-ai-backend:latest
+
+# Deploy via ECS console or CLI
+```
+
+#### Google Cloud Run
+```bash
+# Build and deploy
+gcloud builds submit --tag gcr.io/PROJECT_ID/fintech-ai-backend
+gcloud run deploy fintech-ai-backend --image gcr.io/PROJECT_ID/fintech-ai-backend --platform managed --region us-central1 --allow-unauthenticated
+```
+
+#### DigitalOcean App Platform
+```bash
+# Use docker-compose.yml directly
+# Configure via DigitalOcean console
+```
+
+#### Heroku
+```bash
+# Create app
+heroku create fintech-ai-system
+
+# Add buildpack
+heroku buildpacks:set heroku/python
+
+# Set environment variables
+heroku config:set FRED_API_KEY=your_key
+
+# Deploy
+git push heroku main
+```
+
+---
+
 ## Testing
 
 ### Run Full Test Suite
@@ -366,12 +628,23 @@ python agents/earnings_fetcher.py
 python agents/macro_detector.py
 ```
 
+### Docker Test Environment
+```bash
+# Run tests in Docker
+docker-compose run --rm backend python -m pytest tests/ -v
+
+# Or use deploy script
+./deploy.sh test
+```
+
 ### Current Test Coverage
 - ✅ Sentiment analysis (bullish/bearish/neutral)
 - ✅ Macro regime detection
 - ✅ Database CRUD operations
 - ✅ Full pipeline integration
 - ✅ Report generation
+- ✅ API endpoints
+- ✅ Docker builds
 
 ---
 
@@ -410,7 +683,7 @@ This is a personal learning project, but feedback and suggestions are welcome!
 
 ## Status
 
-🟢 **Day 3 Complete** - Full-Stack Platform Live!
+🟢 **Production Ready** - Full-Stack Platform with Docker Deployment!
 
 ### Completed
 - [x] Project setup
@@ -421,15 +694,21 @@ This is a personal learning project, but feedback and suggestions are welcome!
 - [x] Analysis orchestrator
 - [x] CLI interface (Rich)
 - [x] FastAPI REST API
-- [x] React web dashboard
+- [x] React web dashboard (Bloomberg Terminal design)
 - [x] Backtesting engine
+- [x] Alert system with email notifications
+- [x] Docker containerization
+- [x] Docker Compose orchestration
+- [x] Automated deployment scripts
+- [x] Production nginx configuration
 - [x] End-to-end testing
 
 ### In Progress
 - [ ] Real earnings transcript fetching (Alpha Vantage/SEC EDGAR)
 - [ ] Historical sentiment trend charts
 - [ ] Portfolio watchlists
-- [ ] Email/Slack alerts
+- [ ] SSL/TLS for production
+- [ ] CI/CD pipeline (GitHub Actions)
 
 **Last Updated:** October 31, 2025
 
