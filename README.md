@@ -9,7 +9,7 @@ Build a financial intelligence platform that helps investors identify narrative 
 
 ## Quick Start
 
-### Installation
+### Backend Installation
 
 ```bash
 # Clone the repository
@@ -24,8 +24,17 @@ source venv/Scripts/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Run Analysis
+### Frontend Installation
 
+```bash
+# Install Node.js dependencies
+cd frontend
+npm install
+```
+
+### Run the Application
+
+**Option 1: CLI Interface**
 ```bash
 # Analyze a single company
 python main.py --ticker NVDA
@@ -35,9 +44,26 @@ python main.py --calendar
 
 # Analyze all companies
 python main.py --analyze-all
+```
 
-# Run tests
+**Option 2: Web Dashboard**
+```bash
+# Terminal 1: Start backend API
+python run_api.py
+
+# Terminal 2: Start frontend dev server
+cd frontend
+npm run dev
+```
+
+Then open http://localhost:3000 in your browser.
+
+### Run Tests
+
+```bash
 python test_pipeline.py
+python test_sentiment.py
+python test_api.py
 ```
 
 ---
@@ -81,8 +107,9 @@ Trading Recommendation
 
 ## Current Features
 
-### ✅ Completed (Day 1)
+### ✅ Completed
 
+#### Day 1: Core Analysis Engine
 - **Sentiment Analysis Agent**
   - FinBERT-powered sentiment analysis
   - Sentence-level granular analysis
@@ -90,10 +117,11 @@ Trading Recommendation
   - Key quote extraction
 
 - **Macro Regime Detector**
-  - Multi-indicator classification (VIX, unemployment, inflation, Fed rate)
+  - Real-time VIX data from Yahoo Finance
+  - FRED API integration (unemployment, inflation, Fed rate, GDP)
   - Bull/Bear/Transition regime detection
   - Trading recommendations with risk levels
-  - Detailed reasoning and signal breakdown
+  - 24-hour caching for performance
 
 - **Analysis Orchestrator**
   - Coordinates all agents in pipeline
@@ -112,6 +140,40 @@ Trading Recommendation
   - Formatted tables and panels
   - Multiple analysis modes
 
+#### Day 2: Real Data & API
+- **Market Data Integration**
+  - Real-time stock prices via yfinance
+  - Historical price data (OHLCV)
+  - Volatility calculations and Sharpe ratio
+  - 52-week high/low, P/E ratios, market cap
+  - 1-hour intelligent caching
+
+- **FastAPI REST API**
+  - 7 RESTful endpoints
+  - CORS middleware for frontend
+  - Standard JSON response format
+  - Error handling and validation
+  - Health monitoring
+
+- **Backtesting Engine**
+  - Historical sentiment prediction validation
+  - Accuracy metrics (1-day, 5-day, 30-day)
+  - Performance by sentiment label
+  - Best/worst predictions analysis
+  - JSON report generation
+
+#### Day 3: Web Dashboard
+- **React Frontend**
+  - Bloomberg Terminal-inspired design
+  - Real-time analysis display
+  - Dark mode (default) with light mode toggle
+  - Sentiment visualization with color coding
+  - Macro regime indicators
+  - Recent analyses history
+  - API health status monitoring
+  - Responsive design (desktop & mobile)
+  - Professional animations and transitions
+
 ---
 
 ## Project Structure
@@ -123,24 +185,45 @@ fintech-ai-system/
 │   ├── __init__.py
 │   ├── sentiment_analyzer.py   # FinBERT sentiment analysis
 │   ├── earnings_fetcher.py     # Earnings data retrieval
-│   └── macro_detector.py       # Macro regime classification
+│   ├── macro_detector.py       # Macro regime classification
+│   └── market_data.py          # Real-time stock data (yfinance)
 │
 ├── backend/                     # Backend Infrastructure
 │   ├── __init__.py
 │   ├── database.py             # SQLite database manager
-│   └── orchestrator.py         # Agent orchestration pipeline
+│   ├── orchestrator.py         # Agent orchestration pipeline
+│   ├── api.py                  # FastAPI REST API
+│   ├── backtester.py           # Backtesting engine
+│   └── config.py               # Environment configuration
+│
+├── frontend/                    # React Web Dashboard
+│   ├── src/
+│   │   ├── App.jsx             # Main React component
+│   │   ├── main.jsx            # Entry point
+│   │   ├── api.js              # API client
+│   │   └── index.css           # Tailwind styles
+│   ├── index.html
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   └── README.md
 │
 ├── data/                        # Data Storage
 │   ├── fintech_ai.db           # SQLite database
 │   ├── analysis_reports/       # JSON analysis reports
+│   ├── backtests/              # Backtest results
+│   ├── market_cache/           # Market data cache
+│   ├── macro_cache/            # Macro indicators cache
 │   └── earnings_cache.json     # Cached earnings data
 │
-├── frontend/                    # (Future) Web Dashboard
-│
 ├── main.py                      # CLI entry point
+├── run_api.py                   # API server launcher
 ├── test_sentiment.py            # Sentiment analyzer tests
 ├── test_pipeline.py             # End-to-end pipeline tests
+├── test_api.py                  # API endpoint tests
+├── test_backtester_mock.py     # Backtesting tests
 ├── requirements.txt             # Python dependencies
+├── .env.template                # Environment variables template
 └── README.md                    # This file
 ```
 
@@ -154,8 +237,23 @@ fintech-ai-system/
 - **PyTorch** - Deep learning framework
 
 ### Backend
+- **FastAPI** - Modern REST API framework
 - **SQLite** - Embedded database
 - **Python 3.13+** - Core language
+- **Uvicorn** - ASGI server
+
+### Frontend
+- **React 18** - UI library
+- **Vite** - Build tool and dev server
+- **Tailwind CSS** - Utility-first CSS
+- **Axios** - HTTP client
+- **Recharts** - Data visualization (planned)
+
+### Data Sources
+- **yfinance** - Real-time stock data
+- **FRED API** - Economic indicators
+- **Yahoo Finance** - VIX data
+- **Alpha Vantage** - Earnings calendar (planned)
 
 ### CLI
 - **Rich** - Beautiful terminal UI
@@ -163,7 +261,7 @@ fintech-ai-system/
 
 ### Data Processing
 - **pandas** - Data manipulation
-- **requests** - API calls (future)
+- **numpy** - Numerical computations
 - **python-dotenv** - Configuration management
 
 ---
@@ -312,18 +410,26 @@ This is a personal learning project, but feedback and suggestions are welcome!
 
 ## Status
 
-🟢 **Day 1 Complete** - MVP Working!
+🟢 **Day 3 Complete** - Full-Stack Platform Live!
 
+### Completed
 - [x] Project setup
-- [x] Sentiment analysis agent
-- [x] Macro regime detector
-- [x] Database infrastructure
+- [x] Sentiment analysis agent (FinBERT)
+- [x] Macro regime detector (VIX + FRED)
+- [x] Market data integration (yfinance)
+- [x] Database infrastructure (SQLite)
 - [x] Analysis orchestrator
-- [x] CLI interface
+- [x] CLI interface (Rich)
+- [x] FastAPI REST API
+- [x] React web dashboard
+- [x] Backtesting engine
 - [x] End-to-end testing
-- [ ] Real API integration
-- [ ] Web dashboard
-- [ ] Backtesting engine
+
+### In Progress
+- [ ] Real earnings transcript fetching (Alpha Vantage/SEC EDGAR)
+- [ ] Historical sentiment trend charts
+- [ ] Portfolio watchlists
+- [ ] Email/Slack alerts
 
 **Last Updated:** October 31, 2025
 
