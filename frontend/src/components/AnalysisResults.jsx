@@ -18,14 +18,14 @@ export default function AnalysisResults({ result }) {
               <h2 className="text-3xl font-bold text-terminal-orange">
                 {result.ticker}
               </h2>
-              {result.company_name && (
+              {result.company && (
                 <span className="text-terminal-text-dim text-sm">
-                  {result.company_name}
+                  {result.company}
                 </span>
               )}
             </div>
             <p className="text-terminal-text-dim text-sm">
-              Analysis completed at {new Date(result.timestamp).toLocaleString()}
+              Analysis completed at {result.analysis_timestamp ? new Date(result.analysis_timestamp).toLocaleString() : 'N/A'}
             </p>
           </div>
 
@@ -50,47 +50,47 @@ export default function AnalysisResults({ result }) {
           <div>
             <p className="text-xs text-terminal-text-dim mb-1">Sentiment</p>
             <p className={`font-semibold ${
-              result.sentiment?.sentiment_label?.toLowerCase() === 'positive' ? 'text-terminal-green' :
-              result.sentiment?.sentiment_label?.toLowerCase() === 'negative' ? 'text-terminal-red' :
+              result.sentiment_analysis?.overall_label?.toLowerCase() === 'positive' ? 'text-terminal-green' :
+              result.sentiment_analysis?.overall_label?.toLowerCase() === 'negative' ? 'text-terminal-red' :
               'text-terminal-yellow'
             }`}>
-              {result.sentiment?.sentiment_label?.toUpperCase() || 'N/A'}
+              {result.sentiment_analysis?.overall_label?.toUpperCase() || 'N/A'}
             </p>
           </div>
           <div>
             <p className="text-xs text-terminal-text-dim mb-1">Macro Regime</p>
             <p className={`font-semibold ${
-              result.macro?.regime === 'BULL' ? 'text-terminal-green' :
-              result.macro?.regime === 'BEAR' ? 'text-terminal-red' :
+              result.macro_regime?.regime === 'BULL' ? 'text-terminal-green' :
+              result.macro_regime?.regime === 'BEAR' ? 'text-terminal-red' :
               'text-terminal-yellow'
             }`}>
-              {result.macro?.regime || 'N/A'}
+              {result.macro_regime?.regime || 'N/A'}
             </p>
           </div>
           <div>
             <p className="text-xs text-terminal-text-dim mb-1">Recommendation</p>
             <p className={`font-semibold ${
-              result.macro?.recommendation === 'FAVORABLE' ? 'text-terminal-green' :
-              result.macro?.recommendation === 'AVOID' ? 'text-terminal-red' :
+              result.recommendation?.action === 'FAVORABLE' ? 'text-terminal-green' :
+              result.recommendation?.action === 'AVOID' ? 'text-terminal-red' :
               'text-terminal-yellow'
             }`}>
-              {result.macro?.recommendation || 'N/A'}
+              {result.recommendation?.action || 'N/A'}
             </p>
           </div>
           <div>
             <p className="text-xs text-terminal-text-dim mb-1">Confidence</p>
             <p className="font-semibold text-terminal-blue-light">
-              {result.sentiment?.confidence ? `${(result.sentiment.confidence * 100).toFixed(0)}%` : 'N/A'}
+              {result.sentiment_analysis?.confidence ? `${(result.sentiment_analysis.confidence * 100).toFixed(0)}%` : 'N/A'}
             </p>
           </div>
         </div>
       </div>
 
       {/* Sentiment Analysis Card */}
-      {result.sentiment && <SentimentCard sentiment={result.sentiment} />}
+      {result.sentiment_analysis && <SentimentCard sentiment={result.sentiment_analysis} />}
 
       {/* Macro Regime Card */}
-      {result.macro && <MacroRegimeCard macro={result.macro} />}
+      {result.macro_regime && <MacroRegimeCard macro={result.macro_regime} />}
 
       {/* Trading Recommendation */}
       {result.recommendation && (
@@ -103,9 +103,41 @@ export default function AnalysisResults({ result }) {
               <h3 className="text-lg font-semibold text-terminal-orange mb-2">
                 Trading Recommendation
               </h3>
-              <p className="text-terminal-text leading-relaxed">
-                {result.recommendation}
-              </p>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <span className={`text-xl font-bold ${
+                    result.recommendation?.action === 'FAVORABLE' ? 'text-terminal-green' :
+                    result.recommendation?.action === 'AVOID' ? 'text-terminal-red' :
+                    'text-terminal-yellow'
+                  }`}>
+                    {result.recommendation?.action || 'N/A'}
+                  </span>
+                  {result.recommendation?.risk_level && (
+                    <span className="text-sm px-2 py-1 bg-terminal-border rounded text-terminal-text-dim">
+                      Risk: {result.recommendation.risk_level}
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-terminal-text leading-relaxed">
+                  {result.recommendation?.rationale || 'No rationale available'}
+                </p>
+
+                {result.recommendation?.suggested_actions && result.recommendation.suggested_actions.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs text-terminal-text-dim mb-2">Suggested Actions:</p>
+                    <ul className="space-y-1">
+                      {result.recommendation.suggested_actions.map((action, idx) => (
+                        <li key={idx} className="text-sm text-terminal-text flex items-start gap-2">
+                          <span className="text-terminal-orange mt-1">→</span>
+                          <span>{action}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
