@@ -23,7 +23,9 @@
       "Bash(python test_sentiment.py:*)",
       "Bash(python test_pipeline.py:*)",
       "Bash(python main.py:*)",
-      "Bash(python backend/config.py:*)"
+      "Bash(python backend/config.py:*)",
+      "Bash(curl:*)",
+      "Bash(python -m json.tool:*)"
     ],
     "deny": [],
     "ask": []
