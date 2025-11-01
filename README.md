@@ -1,18 +1,347 @@
 # Macro-Aware Earnings Intelligence System
 
+AI-powered financial intelligence platform that analyzes earnings calls with sentiment analysis and macro regime context to generate actionable trading insights.
+
 ## Vision
 Build a financial intelligence platform that helps investors identify narrative divergences in earnings calls, weighted by macro regime context.
 
-## Day 1 Setup
-- Python environment created
-- Basic project structure established
-- Ready to build sentiment analysis agent
+---
+
+## Quick Start
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/fintech-ai-system.git
+cd fintech-ai-system
+
+# Create and activate virtual environment
+python -m venv venv
+source venv/Scripts/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Run Analysis
+
+```bash
+# Analyze a single company
+python main.py --ticker NVDA
+
+# Show earnings calendar
+python main.py --calendar
+
+# Analyze all companies
+python main.py --analyze-all
+
+# Run tests
+python test_pipeline.py
+```
+
+---
+
+## Example Output
+
+```
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                 MACRO-AWARE EARNINGS INTELLIGENCE SYSTEM                      ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+Analysis Results: NVIDIA Corporation (NVDA)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sentiment Analysis
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ Overall Sentiment   │ 📈 POSITIVE (Score: +0.746, Confidence: 76.3%)        │
+│ Sentiment Score     │ +0.746 (-1=bearish, +1=bullish)                        │
+│ Confidence          │ 76.3%                                                  │
+│ Distribution        │ Positive: 87.5% | Negative: 0.0% | Neutral: 12.5%     │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+
+Macro Regime Analysis
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ Regime              │ 🐂 BULL                                                │
+│ Confidence          │ 87.5%                                                  │
+│ VIX                 │ 18.5                                                   │
+│ Unemployment        │ 3.8%                                                   │
+│ Inflation           │ 3.2%                                                   │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+
+Trading Recommendation
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ Overall Verdict     │ 🚀 STRONG BUY                                          │
+│ Recommendation      │ FAVORABLE                                              │
+│ Risk Level          │ MODERATE                                               │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Current Features
+
+### ✅ Completed (Day 1)
+
+- **Sentiment Analysis Agent**
+  - FinBERT-powered sentiment analysis
+  - Sentence-level granular analysis
+  - Confidence scoring and aggregation
+  - Key quote extraction
+
+- **Macro Regime Detector**
+  - Multi-indicator classification (VIX, unemployment, inflation, Fed rate)
+  - Bull/Bear/Transition regime detection
+  - Trading recommendations with risk levels
+  - Detailed reasoning and signal breakdown
+
+- **Analysis Orchestrator**
+  - Coordinates all agents in pipeline
+  - Comprehensive report generation
+  - Performance timing and monitoring
+  - Database storage and retrieval
+
+- **SQLite Database**
+  - Companies, earnings calls, and analysis results
+  - Indexed for fast queries
+  - Persistent storage of all analyses
+
+- **Professional CLI Interface**
+  - Rich terminal UI with colors
+  - Real-time progress indicators
+  - Formatted tables and panels
+  - Multiple analysis modes
+
+---
+
+## Project Structure
+
+```
+fintech-ai-system/
+│
+├── agents/                      # AI Agents
+│   ├── __init__.py
+│   ├── sentiment_analyzer.py   # FinBERT sentiment analysis
+│   ├── earnings_fetcher.py     # Earnings data retrieval
+│   └── macro_detector.py       # Macro regime classification
+│
+├── backend/                     # Backend Infrastructure
+│   ├── __init__.py
+│   ├── database.py             # SQLite database manager
+│   └── orchestrator.py         # Agent orchestration pipeline
+│
+├── data/                        # Data Storage
+│   ├── fintech_ai.db           # SQLite database
+│   ├── analysis_reports/       # JSON analysis reports
+│   └── earnings_cache.json     # Cached earnings data
+│
+├── frontend/                    # (Future) Web Dashboard
+│
+├── main.py                      # CLI entry point
+├── test_sentiment.py            # Sentiment analyzer tests
+├── test_pipeline.py             # End-to-end pipeline tests
+├── requirements.txt             # Python dependencies
+└── README.md                    # This file
+```
+
+---
 
 ## Tech Stack
-- Python 3.11+
-- FastAPI (backend)
-- FinBERT (sentiment analysis)
-- SQLite (database)
+
+### AI/ML
+- **FinBERT** (ProsusAI/finbert) - Financial sentiment analysis
+- **Transformers** (HuggingFace) - Model loading and inference
+- **PyTorch** - Deep learning framework
+
+### Backend
+- **SQLite** - Embedded database
+- **Python 3.13+** - Core language
+
+### CLI
+- **Rich** - Beautiful terminal UI
+- **argparse** - Command-line parsing
+
+### Data Processing
+- **pandas** - Data manipulation
+- **requests** - API calls (future)
+- **python-dotenv** - Configuration management
+
+---
+
+## How It Works
+
+### Analysis Pipeline
+
+1. **Fetch Transcript** - Retrieves earnings call transcript
+2. **Sentiment Analysis** - FinBERT analyzes each sentence
+3. **Macro Detection** - Classifies current market regime
+4. **Synthesis** - Combines insights into actionable report
+5. **Storage** - Saves to database and JSON file
+
+### Sentiment Scoring
+
+- Range: -1 (extremely bearish) to +1 (extremely bullish)
+- Aggregated from sentence-level analysis
+- Weighted by confidence scores
+
+### Macro Regime Classification
+
+**BULL Market** (🐂)
+- VIX < 20
+- Unemployment < 4.5%
+- Inflation < 3.5%
+- Confidence > 65%
+
+**BEAR Market** (🐻)
+- VIX > 25 OR
+- Unemployment > 5% OR
+- Inflation > 4%
+- Confidence > 65%
+
+**TRANSITION** (⚖️)
+- Mixed signals
+- Regime uncertainty
+
+### Overall Assessment
+
+Combines sentiment + macro regime:
+- **STRONG BUY**: Bull regime + Positive sentiment
+- **BUY**: Bull regime + Moderate positive
+- **NEUTRAL**: Mixed signals
+- **SELL**: Bear regime + Negative sentiment
+- **STRONG SELL**: Bear regime + Strong negative
+
+---
+
+## Next Steps (Roadmap)
+
+### Day 2-3: Real Data Integration
+- [ ] Alpha Vantage API for earnings calendar
+- [ ] SEC EDGAR for transcripts
+- [ ] FRED API for macro data
+- [ ] Real-time VIX data
+
+### Day 4-5: Advanced Analytics
+- [ ] Historical sentiment trends
+- [ ] Peer comparison analysis
+- [ ] Earnings surprise detection
+- [ ] Narrative divergence scoring
+
+### Week 2: Web Dashboard
+- [ ] FastAPI backend
+- [ ] React frontend
+- [ ] Interactive charts (Plotly)
+- [ ] Real-time updates
+
+### Week 3: Backtesting
+- [ ] Historical performance analysis
+- [ ] Strategy optimization
+- [ ] Risk metrics
+- [ ] Portfolio simulation
+
+### Future Enhancements
+- [ ] Multi-language support
+- [ ] Sector rotation signals
+- [ ] Options strategy recommendations
+- [ ] Slack/Discord integration
+- [ ] Email alerts
+
+---
+
+## Testing
+
+### Run Full Test Suite
+
+```bash
+# Test sentiment analyzer
+python test_sentiment.py
+
+# Test end-to-end pipeline
+python test_pipeline.py
+
+# Test database
+python backend/database.py
+
+# Test individual agents
+python agents/sentiment_analyzer.py
+python agents/earnings_fetcher.py
+python agents/macro_detector.py
+```
+
+### Current Test Coverage
+- ✅ Sentiment analysis (bullish/bearish/neutral)
+- ✅ Macro regime detection
+- ✅ Database CRUD operations
+- ✅ Full pipeline integration
+- ✅ Report generation
+
+---
+
+## Database Schema
+
+### Companies
+```sql
+ticker (PK), name, sector, market_cap, created_at, updated_at
+```
+
+### Earnings Calls
+```sql
+id (PK), ticker (FK), call_date, quarter, fiscal_year,
+transcript_text, sentiment_score, macro_regime, created_at
+```
+
+### Analysis Results
+```sql
+id (PK), call_id (FK), sentiment_label, confidence,
+sentiment_distribution, key_quotes, macro_regime,
+macro_confidence, recommendation, timestamp
+```
+
+---
+
+## Contributing
+
+This is a personal learning project, but feedback and suggestions are welcome!
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+---
 
 ## Status
-=4 Day 1 - Foundation setup
+
+🟢 **Day 1 Complete** - MVP Working!
+
+- [x] Project setup
+- [x] Sentiment analysis agent
+- [x] Macro regime detector
+- [x] Database infrastructure
+- [x] Analysis orchestrator
+- [x] CLI interface
+- [x] End-to-end testing
+- [ ] Real API integration
+- [ ] Web dashboard
+- [ ] Backtesting engine
+
+**Last Updated:** October 31, 2025
+
+---
+
+## License
+
+MIT License - See LICENSE file for details
+
+---
+
+## Acknowledgments
+
+- **ProsusAI** for FinBERT model
+- **HuggingFace** for Transformers library
+- **Rich** for beautiful CLI
+- Financial Twitter community for inspiration
+
+---
+
+**Built with ❤️ by building in public**

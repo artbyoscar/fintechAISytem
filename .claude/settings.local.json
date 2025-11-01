@@ -19,7 +19,9 @@
       "Bash(python -m pip install:*)",
       "Bash(pip freeze:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(python test_sentiment.py:*)",
+      "Bash(python test_pipeline.py:*)"
     ],
     "deny": [],
     "ask": []
