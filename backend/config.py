@@ -49,7 +49,13 @@ class Config:
     # Database Configuration
     # ============================================================================
 
-    DB_PATH: str = os.getenv("DB_PATH", "data/fintech_ai.db")
+    # Get DB_PATH from env or use default absolute path
+    _db_path_env = os.getenv("DB_PATH", "data/fintech_ai.db")
+    # If path is relative, make it relative to project root
+    if not os.path.isabs(_db_path_env):
+        DB_PATH: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), _db_path_env)
+    else:
+        DB_PATH: str = _db_path_env
 
     # ============================================================================
     # Model Configuration
@@ -299,6 +305,10 @@ FRED_RATE_LIMIT=120
         logger.info(f"Created .env file: {actual_env}")
         print(f"\n✓ Created .env file")
         print(f"  Edit it and add your API keys")
+
+
+# Ensure data directory exists
+os.makedirs(os.path.dirname(Config.DB_PATH), exist_ok=True)
 
 
 if __name__ == "__main__":

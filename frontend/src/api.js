@@ -1,11 +1,11 @@
 /**
  * API Client for Fintech AI Backend
- * Communicates with FastAPI backend at http://localhost:8000
+ * Communicates with FastAPI backend at http://localhost:8001
  */
 
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
 
 console.log('🔗 API Base URL:', API_BASE_URL);
 
@@ -76,7 +76,7 @@ apiClient.interceptors.response.use(
     } else if (error.request) {
       // Request made but no response
       console.error('🚨 Network Error: No response from server');
-      throw new Error(`Cannot connect to backend at ${API_BASE_URL}. Please ensure the API server is running on port 8000.`);
+      throw new Error(`Cannot connect to backend at ${API_BASE_URL}. Please ensure the API server is running on port 8001.`);
     } else {
       // Something else happened
       console.error('🚨 Unknown Error:', error.message);

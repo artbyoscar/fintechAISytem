@@ -1336,6 +1336,12 @@ class EarningsFetcher:
             }
         }
 
+        # Debug: Print all available tickers
+        logger.info(f"Available tickers in mock_transcripts: {list(mock_transcripts.keys())}")
+        logger.info(f"Total tickers available: {len(mock_transcripts)}")
+        logger.info(f"Searching for ticker: {ticker}")
+        logger.info(f"Ticker exists: {ticker in mock_transcripts}")
+
         if ticker in mock_transcripts:
             transcript_data = mock_transcripts[ticker]
             logger.info(f"Retrieved transcript for {ticker}")

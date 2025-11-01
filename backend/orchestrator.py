@@ -7,8 +7,15 @@ import logging
 import time
 import json
 import os
+import sys
+from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
+
+# Add parent directory to path to access agents module
+parent_dir = str(Path(__file__).parent.parent)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
 
 from agents.sentiment_analyzer import SentimentAnalyzer
 from agents.earnings_fetcher import EarningsFetcher
