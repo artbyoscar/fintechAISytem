@@ -93,6 +93,29 @@ class Database:
                 )
             """)
 
+            # Trading signals table
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS trading_signals (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ticker TEXT NOT NULL,
+                    call_id INTEGER,
+                    signal TEXT NOT NULL,
+                    confidence REAL NOT NULL,
+                    reasoning TEXT,
+                    position_size INTEGER,
+                    risk_score REAL,
+                    sentiment_score REAL,
+                    sentiment_label TEXT,
+                    sentiment_confidence REAL,
+                    macro_regime TEXT,
+                    macro_confidence REAL,
+                    validation_notes TEXT,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (ticker) REFERENCES companies(ticker),
+                    FOREIGN KEY (call_id) REFERENCES earnings_calls(id)
+                )
+            """)
+
             # Create indexes for better query performance
             cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_earnings_ticker
@@ -112,6 +135,21 @@ class Database:
             cursor.execute("""
                 CREATE INDEX IF NOT EXISTS idx_analysis_call_id
                 ON analysis_results(call_id)
+            """)
+
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_signals_ticker
+                ON trading_signals(ticker)
+            """)
+
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_signals_timestamp
+                ON trading_signals(timestamp DESC)
+            """)
+
+            cursor.execute("""
+                CREATE INDEX IF NOT EXISTS idx_signals_ticker_timestamp
+                ON trading_signals(ticker, timestamp DESC)
             """)
 
             self.conn.commit()
@@ -404,6 +442,173 @@ class Database:
 
         except sqlite3.Error as e:
             logger.error(f"Failed to get stats: {e}")
+            return {}
+
+    def insert_trading_signal(
+        self,
+        ticker: str,
+        signal_data: Dict,
+        call_id: Optional[int] = None
+    ) -> Optional[int]:
+        """
+        Insert trading signal into database.
+
+        Args:
+            ticker: Stock ticker symbol
+            signal_data: Signal generation results
+            call_id: Optional earnings call ID
+
+        Returns:
+            Signal ID if successful, None otherwise
+        """
+        cursor = self.conn.cursor()
+
+        try:
+            factors = signal_data.get('factors', {})
+
+            cursor.execute("""
+                INSERT INTO trading_signals (
+                    ticker, call_id, signal, confidence, reasoning,
+                    position_size, risk_score,
+                    sentiment_score, sentiment_label, sentiment_confidence,
+                    macro_regime, macro_confidence, validation_notes
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                ticker,
+                call_id,
+                signal_data['signal'],
+                signal_data['confidence'],
+                signal_data['reasoning'],
+                signal_data['position_size'],
+                signal_data['risk_score'],
+                factors.get('sentiment_score'),
+                factors.get('sentiment_label'),
+                factors.get('sentiment_confidence'),
+                factors.get('macro_regime'),
+                factors.get('macro_confidence'),
+                signal_data.get('validation_notes')
+            ))
+
+            self.conn.commit()
+            signal_id = cursor.lastrowid
+            logger.info(f"Trading signal inserted: {ticker} - {signal_data['signal']}")
+            return signal_id
+
+        except sqlite3.Error as e:
+            self.conn.rollback()
+            logger.error(f"Failed to insert trading signal: {e}")
+            return None
+
+    def get_trading_signals(
+        self,
+        ticker: Optional[str] = None,
+        signal_type: Optional[str] = None,
+        limit: int = 50
+    ) -> List[Dict]:
+        """
+        Retrieve trading signals from database.
+
+        Args:
+            ticker: Optional ticker to filter by
+            signal_type: Optional signal type (BUY/SELL/HOLD)
+            limit: Maximum number of signals to return
+
+        Returns:
+            List of signal dictionaries
+        """
+        cursor = self.conn.cursor()
+
+        try:
+            query = "SELECT * FROM trading_signals WHERE 1=1"
+            params = []
+
+            if ticker:
+                query += " AND ticker = ?"
+                params.append(ticker.upper())
+
+            if signal_type:
+                query += " AND signal = ?"
+                params.append(signal_type.upper())
+
+            query += " ORDER BY timestamp DESC LIMIT ?"
+            params.append(limit)
+
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+
+            signals = []
+            for row in rows:
+                signals.append({
+                    'id': row['id'],
+                    'ticker': row['ticker'],
+                    'call_id': row['call_id'],
+                    'signal': row['signal'],
+                    'confidence': row['confidence'],
+                    'reasoning': row['reasoning'],
+                    'position_size': row['position_size'],
+                    'risk_score': row['risk_score'],
+                    'sentiment_score': row['sentiment_score'],
+                    'sentiment_label': row['sentiment_label'],
+                    'sentiment_confidence': row['sentiment_confidence'],
+                    'macro_regime': row['macro_regime'],
+                    'macro_confidence': row['macro_confidence'],
+                    'validation_notes': row['validation_notes'],
+                    'timestamp': row['timestamp']
+                })
+
+            return signals
+
+        except sqlite3.Error as e:
+            logger.error(f"Failed to retrieve trading signals: {e}")
+            return []
+
+    def get_signal_stats(self) -> Dict:
+        """
+        Get statistics about trading signals.
+
+        Returns:
+            Dictionary with signal statistics
+        """
+        cursor = self.conn.cursor()
+
+        try:
+            stats = {}
+
+            # Total signals
+            cursor.execute("SELECT COUNT(*) as total FROM trading_signals")
+            stats['total_signals'] = cursor.fetchone()['total']
+
+            # Signals by type
+            cursor.execute("""
+                SELECT signal, COUNT(*) as count
+                FROM trading_signals
+                GROUP BY signal
+            """)
+            stats['by_signal'] = {row['signal']: row['count'] for row in cursor.fetchall()}
+
+            # Average confidence by signal
+            cursor.execute("""
+                SELECT signal, AVG(confidence) as avg_confidence
+                FROM trading_signals
+                GROUP BY signal
+            """)
+            stats['avg_confidence'] = {
+                row['signal']: round(row['avg_confidence'], 3)
+                for row in cursor.fetchall()
+            }
+
+            # Recent 24h
+            cursor.execute("""
+                SELECT COUNT(*) as count
+                FROM trading_signals
+                WHERE datetime(timestamp) >= datetime('now', '-1 day')
+            """)
+            stats['recent_24h'] = cursor.fetchone()['count']
+
+            return stats
+
+        except sqlite3.Error as e:
+            logger.error(f"Failed to get signal stats: {e}")
             return {}
 
     def close(self):
