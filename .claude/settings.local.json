@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git --version:*)",
+      "Bash(python -m venv:*)",
+      "Bash(venvScriptsactivate)",
+      "Bash(call venvScriptsactivate.bat)",
+      "Bash(source venv/Scripts/activate)",
+      "Bash(git init:*)",
+      "Bash(mkdir:*)",
+      "Bash(echo:*)",
+      "Bash(backend/__init__.py)",
+      "Bash(agents/__init__.py)",
+      "Bash(.gitignore)",
+      "Bash(README.md)",
+      "Bash(requirements.txt)",
+      "Bash(touch:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m pip install:*)",
+      "Bash(pip freeze:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
