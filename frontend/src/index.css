@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-terminal-bg text-terminal-text font-mono antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-terminal-bg-light border border-terminal-border rounded-lg p-6 shadow-lg;
+  }
+
+  .btn-primary {
+    @apply bg-terminal-orange hover:bg-terminal-orange-light text-white font-semibold py-2 px-6 rounded-md transition-all duration-200 ease-in-out;
+  }
+
+  .btn-secondary {
+    @apply bg-terminal-border hover:bg-terminal-blue text-terminal-text font-semibold py-2 px-6 rounded-md transition-all duration-200 ease-in-out;
+  }
+
+  .input-field {
+    @apply bg-terminal-bg-light border border-terminal-border rounded-md px-4 py-2 text-terminal-text focus:outline-none focus:ring-2 focus:ring-terminal-orange focus:border-transparent;
+  }
+
+  .status-bullish {
+    @apply text-terminal-green-light;
+  }
+
+  .status-bearish {
+    @apply text-terminal-red-light;
+  }
+
+  .status-neutral {
+    @apply text-terminal-yellow-light;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Ticker tape animation */
+@keyframes ticker {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.ticker-tape {
+  animation: ticker 30s linear infinite;
+}
