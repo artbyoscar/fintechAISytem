@@ -63,7 +63,7 @@ export default function RecentAnalyses({ analyses, onTickerClick }) {
             </tr>
           </thead>
           <tbody>
-            {analyses.map((analysis, idx) => (
+            {analyses.map((item, idx) => (
               <tr
                 key={idx}
                 className="border-b border-terminal-border hover:bg-terminal-border transition-colors group"
@@ -71,49 +71,49 @@ export default function RecentAnalyses({ analyses, onTickerClick }) {
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-terminal-orange font-mono">
-                      {analysis.ticker}
+                      {item.call?.ticker || 'N/A'}
                     </span>
                   </div>
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
-                    <span>{getSentimentIcon(analysis.sentiment_analysis?.overall_label)}</span>
-                    <span className={`font-semibold text-sm ${getSentimentColor(analysis.sentiment_analysis?.overall_label)}`}>
-                      {analysis.sentiment_analysis?.overall_label?.toUpperCase() || 'N/A'}
+                    <span>{getSentimentIcon(item.analysis?.sentiment_label)}</span>
+                    <span className={`font-semibold text-sm ${getSentimentColor(item.analysis?.sentiment_label)}`}>
+                      {item.analysis?.sentiment_label?.toUpperCase() || 'N/A'}
                     </span>
                   </div>
                 </td>
                 <td className="py-3 px-4">
                   <span className="font-mono text-sm text-terminal-text">
-                    {analysis.sentiment_analysis?.sentiment_score ? `${(analysis.sentiment_analysis.sentiment_score * 100).toFixed(0)}%` : 'N/A'}
+                    {item.call?.sentiment_score ? `${(item.call.sentiment_score * 100).toFixed(0)}%` : 'N/A'}
                   </span>
                 </td>
                 <td className="py-3 px-4">
                   <span className={`text-sm font-semibold ${
-                    analysis.macro_regime?.regime === 'BULL' ? 'text-terminal-green' :
-                    analysis.macro_regime?.regime === 'BEAR' ? 'text-terminal-red' :
+                    item.analysis?.macro_regime === 'BULL' ? 'text-terminal-green' :
+                    item.analysis?.macro_regime === 'BEAR' ? 'text-terminal-red' :
                     'text-terminal-yellow'
                   }`}>
-                    {analysis.macro_regime?.regime || 'N/A'}
+                    {item.analysis?.macro_regime || 'N/A'}
                   </span>
                 </td>
                 <td className="py-3 px-4">
                   <span className={`text-sm ${
-                    analysis.recommendation?.action?.includes('FAVORABLE') ? 'text-terminal-green' :
-                    analysis.recommendation?.action?.includes('AVOID') ? 'text-terminal-red' :
+                    item.analysis?.recommendation?.includes('FAVORABLE') ? 'text-terminal-green' :
+                    item.analysis?.recommendation?.includes('AVOID') ? 'text-terminal-red' :
                     'text-terminal-yellow'
                   }`}>
-                    {analysis.recommendation?.action || 'N/A'}
+                    {item.analysis?.recommendation || 'N/A'}
                   </span>
                 </td>
                 <td className="py-3 px-4">
                   <span className="text-xs text-terminal-text-dim">
-                    {analysis.analysis_timestamp ? new Date(analysis.analysis_timestamp).toLocaleDateString() : 'N/A'}
+                    {item.analysis?.timestamp ? new Date(item.analysis.timestamp).toLocaleDateString() : 'N/A'}
                   </span>
                 </td>
                 <td className="py-3 px-4 text-right">
                   <button
-                    onClick={() => onTickerClick && onTickerClick(analysis.ticker)}
+                    onClick={() => onTickerClick && onTickerClick(item.call?.ticker)}
                     className="text-xs text-terminal-orange hover:text-terminal-orange-light transition-colors opacity-0 group-hover:opacity-100"
                   >
                     Re-analyze →
@@ -127,39 +127,39 @@ export default function RecentAnalyses({ analyses, onTickerClick }) {
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-3">
-        {analyses.map((analysis, idx) => (
+        {analyses.map((item, idx) => (
           <div
             key={idx}
             className="p-4 bg-terminal-bg rounded-md border border-terminal-border hover:border-terminal-orange transition-colors cursor-pointer"
-            onClick={() => onTickerClick && onTickerClick(analysis.ticker)}
+            onClick={() => onTickerClick && onTickerClick(item.call?.ticker)}
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
                 <span className="text-xl font-bold text-terminal-orange font-mono">
-                  {analysis.ticker}
+                  {item.call?.ticker || 'N/A'}
                 </span>
-                <span>{getSentimentIcon(analysis.sentiment_analysis?.overall_label)}</span>
+                <span>{getSentimentIcon(item.analysis?.sentiment_label)}</span>
               </div>
               <span className="text-xs text-terminal-text-dim">
-                {analysis.analysis_timestamp ? new Date(analysis.analysis_timestamp).toLocaleDateString() : 'N/A'}
+                {item.analysis?.timestamp ? new Date(item.analysis.timestamp).toLocaleDateString() : 'N/A'}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <p className="text-xs text-terminal-text-dim mb-1">Sentiment</p>
-                <p className={`font-semibold ${getSentimentColor(analysis.sentiment_analysis?.overall_label)}`}>
-                  {analysis.sentiment_analysis?.overall_label?.toUpperCase() || 'N/A'}
+                <p className={`font-semibold ${getSentimentColor(item.analysis?.sentiment_label)}`}>
+                  {item.analysis?.sentiment_label?.toUpperCase() || 'N/A'}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-terminal-text-dim mb-1">Regime</p>
                 <p className={`font-semibold ${
-                  analysis.macro_regime?.regime === 'BULL' ? 'text-terminal-green' :
-                  analysis.macro_regime?.regime === 'BEAR' ? 'text-terminal-red' :
+                  item.analysis?.macro_regime === 'BULL' ? 'text-terminal-green' :
+                  item.analysis?.macro_regime === 'BEAR' ? 'text-terminal-red' :
                   'text-terminal-yellow'
                 }`}>
-                  {analysis.macro_regime?.regime || 'N/A'}
+                  {item.analysis?.macro_regime || 'N/A'}
                 </p>
               </div>
             </div>
