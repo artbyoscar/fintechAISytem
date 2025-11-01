@@ -22,7 +22,8 @@
       "Bash(git commit:*)",
       "Bash(python test_sentiment.py:*)",
       "Bash(python test_pipeline.py:*)",
-      "Bash(python main.py:*)"
+      "Bash(python main.py:*)",
+      "Bash(python backend/config.py:*)"
     ],
     "deny": [],
     "ask": []
