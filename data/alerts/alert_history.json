@@ -1,0 +1,51 @@
+[
+  {
+    "alert": {
+      "type": "EXTREME_SENTIMENT",
+      "severity": "HIGH",
+      "ticker": "AAPL",
+      "message": "AAPL shows VERY BULLISH sentiment",
+      "details": {
+        "sentiment_score": 0.85,
+        "sentiment_label": "positive",
+        "confidence": 0.92
+      },
+      "timestamp": "2025-10-31T19:30:26.823343"
+    },
+    "ticker": "AAPL",
+    "timestamp": "2025-10-31T19:30:26.824186"
+  },
+  {
+    "alert": {
+      "type": "HIGH_CONFIDENCE",
+      "severity": "LOW",
+      "ticker": "AAPL",
+      "message": "AAPL: Very confident analysis (92%)",
+      "details": {
+        "confidence": 0.92,
+        "sentiment": "positive",
+        "score": 0.85
+      },
+      "timestamp": "2025-10-31T19:30:26.823397"
+    },
+    "ticker": "AAPL",
+    "timestamp": "2025-10-31T19:30:26.824191"
+  },
+  {
+    "alert": {
+      "type": "TRADING_SIGNAL",
+      "severity": "MEDIUM",
+      "ticker": "AAPL",
+      "message": "AAPL: FAVORABLE trading conditions",
+      "details": {
+        "recommendation": "FAVORABLE",
+        "regime": "BULL",
+        "sentiment": "positive",
+        "risk_level": "MODERATE"
+      },
+      "timestamp": "2025-10-31T19:30:26.823400"
+    },
+    "ticker": "AAPL",
+    "timestamp": "2025-10-31T19:30:26.824192"
+  }
+]

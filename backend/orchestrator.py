@@ -14,6 +14,7 @@ from agents.sentiment_analyzer import SentimentAnalyzer
 from agents.earnings_fetcher import EarningsFetcher
 from agents.macro_detector import MacroRegimeDetector
 from backend.database import Database
+from backend.alerts import AlertSystem
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,7 @@ class AnalysisOrchestrator:
         self.earnings_fetcher = EarningsFetcher()
         self.macro_detector = MacroRegimeDetector()
         self.database = Database(db_path)
+        self.alert_system = AlertSystem()
 
         # Ensure database tables exist
         self.database.create_tables()
@@ -78,7 +80,7 @@ class AnalysisOrchestrator:
         timings = {}
 
         # Step 1: Fetch earnings transcript
-        logger.info(f"\n[1/4] Fetching earnings transcript for {ticker}...")
+        logger.info(f"\n[1/5] Fetching earnings transcript for {ticker}...")
         step_start = time.time()
 
         transcript_data = self.earnings_fetcher.get_earnings_transcript(ticker)
@@ -94,7 +96,7 @@ class AnalysisOrchestrator:
         logger.info(f"✓ Transcript fetched ({timings['fetch_transcript']:.2f}s)")
 
         # Step 2: Analyze sentiment
-        logger.info(f"\n[2/4] Analyzing sentiment...")
+        logger.info(f"\n[2/5] Analyzing sentiment...")
         step_start = time.time()
 
         transcript_text = transcript_data['transcript']
@@ -110,7 +112,7 @@ class AnalysisOrchestrator:
                    f"({timings['sentiment_analysis']:.2f}s)")
 
         # Step 3: Detect macro regime
-        logger.info(f"\n[3/4] Detecting macro regime...")
+        logger.info(f"\n[3/5] Detecting macro regime...")
         step_start = time.time()
 
         macro_indicators = self.macro_detector.fetch_macro_indicators()
@@ -123,7 +125,7 @@ class AnalysisOrchestrator:
                    f"({timings['macro_detection']:.2f}s)")
 
         # Step 4: Store in database and generate report
-        logger.info(f"\n[4/4] Storing results and generating report...")
+        logger.info(f"\n[4/5] Storing results and generating report...")
         step_start = time.time()
 
         # Insert company if not exists
@@ -175,11 +177,31 @@ class AnalysisOrchestrator:
         # Save report to file
         report_path = self._save_report(ticker, report)
 
+        # Step 5: Check for alerts
+        logger.info(f"\n[5/5] Checking for alerts...")
+        step_start = time.time()
+
+        alerts = self.alert_system.check_for_alerts(report)
+        if alerts:
+            logger.info(f"✓ Found {len(alerts)} alert(s)")
+            self.alert_system.save_alert_history(alerts, report)
+            # Optionally send email alerts
+            # self.alert_system.send_email_alert("user@example.com", alerts, report)
+        else:
+            logger.info("✓ No alerts triggered")
+
+        timings['alert_check'] = time.time() - step_start
+
+        # Add alerts to report
+        report['alerts'] = alerts
+
         timings['total_pipeline'] = time.time() - pipeline_start
 
         logger.info(f"\n{'='*80}")
         logger.info(f"Analysis completed in {timings['total_pipeline']:.2f}s")
         logger.info(f"Report saved to: {report_path}")
+        if alerts:
+            logger.info(f"Alerts triggered: {len(alerts)}")
         logger.info(f"{'='*80}\n")
 
         return report
