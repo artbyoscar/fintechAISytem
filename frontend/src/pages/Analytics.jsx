@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { checkHealth, getRecentAnalyses } from '../api'
+import { getStats, getRecentAnalyses } from '../api'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 
@@ -24,12 +24,12 @@ export default function Analytics() {
   const loadAnalyticsData = async () => {
     setLoading(true)
     try {
-      const [healthRes, analysesRes] = await Promise.all([
-        checkHealth(),
+      const [statsRes, analysesRes] = await Promise.all([
+        getStats(),
         getRecentAnalyses(100)
       ])
 
-      if (analysesRes.success) {
+      if (analysesRes.success && analysesRes.data.analyses.length > 0) {
         setAnalyses(analysesRes.data.analyses)
         calculateStats(analysesRes.data.analyses)
       }
@@ -45,24 +45,27 @@ export default function Analytics() {
 
     // Sentiment distribution
     const sentimentDist = data.reduce((acc, item) => {
-      const label = item.sentiment_label?.toLowerCase() || 'unknown'
+      const label = item.analysis?.sentiment_label?.toLowerCase() || 'unknown'
       acc[label] = (acc[label] || 0) + 1
       return acc
     }, {})
 
     // Regime distribution
     const regimeDist = data.reduce((acc, item) => {
-      const regime = item.macro_regime || 'UNKNOWN'
+      const regime = item.analysis?.macro_regime || 'UNKNOWN'
       acc[regime] = (acc[regime] || 0) + 1
       return acc
     }, {})
 
     // Average sentiment score
-    const avgSentiment = data.reduce((sum, item) => sum + (item.sentiment_score || 0), 0) / totalAnalyses
+    const avgSentiment = data.reduce((sum, item) => sum + (item.call?.sentiment_score || 0), 0) / totalAnalyses
 
     // Top tickers
     const tickerCount = data.reduce((acc, item) => {
-      acc[item.ticker] = (acc[item.ticker] || 0) + 1
+      const ticker = item.call?.ticker
+      if (ticker) {
+        acc[ticker] = (acc[ticker] || 0) + 1
+      }
       return acc
     }, {})
     const topTickers = Object.entries(tickerCount)
@@ -73,8 +76,8 @@ export default function Analytics() {
     const last30Days = data.slice(0, 30).reverse()
     const timelineData = last30Days.map((item, idx) => ({
       name: `Day ${idx + 1}`,
-      sentiment: (item.sentiment_score || 0) * 100,
-      confidence: (item.confidence || 0) * 100
+      sentiment: (item.call?.sentiment_score || 0) * 100,
+      confidence: (item.analysis?.confidence || 0) * 100
     }))
 
     setStats({
@@ -89,13 +92,13 @@ export default function Analytics() {
 
   const exportToCSV = () => {
     const headers = ['Ticker', 'Sentiment', 'Score', 'Regime', 'Confidence', 'Date']
-    const rows = analyses.map(a => [
-      a.ticker,
-      a.sentiment_label,
-      (a.sentiment_score * 100).toFixed(1),
-      a.macro_regime,
-      (a.confidence * 100).toFixed(1),
-      new Date(a.timestamp).toLocaleDateString()
+    const rows = analyses.map(item => [
+      item.call?.ticker || 'N/A',
+      item.analysis?.sentiment_label || 'N/A',
+      item.call?.sentiment_score ? (item.call.sentiment_score * 100).toFixed(1) : 'N/A',
+      item.analysis?.macro_regime || 'N/A',
+      item.analysis?.confidence ? (item.analysis.confidence * 100).toFixed(1) : 'N/A',
+      item.analysis?.timestamp ? new Date(item.analysis.timestamp).toLocaleDateString() : 'N/A'
     ])
 
     const csvContent = [
@@ -130,13 +133,13 @@ export default function Analytics() {
     doc.text(`Average Sentiment: ${(stats.avgSentiment * 100).toFixed(1)}%`, 14, 62)
 
     // Table
-    const tableData = analyses.slice(0, 50).map(a => [
-      a.ticker,
-      a.sentiment_label,
-      (a.sentiment_score * 100).toFixed(1) + '%',
-      a.macro_regime,
-      (a.confidence * 100).toFixed(1) + '%',
-      new Date(a.timestamp).toLocaleDateString()
+    const tableData = analyses.slice(0, 50).map(item => [
+      item.call?.ticker || 'N/A',
+      item.analysis?.sentiment_label || 'N/A',
+      item.call?.sentiment_score ? (item.call.sentiment_score * 100).toFixed(1) + '%' : 'N/A',
+      item.analysis?.macro_regime || 'N/A',
+      item.analysis?.confidence ? (item.analysis.confidence * 100).toFixed(1) + '%' : 'N/A',
+      item.analysis?.timestamp ? new Date(item.analysis.timestamp).toLocaleDateString() : 'N/A'
     ])
 
     doc.autoTable({
@@ -354,40 +357,42 @@ export default function Analytics() {
                 </tr>
               </thead>
               <tbody>
-                {analyses.slice(0, 10).map((analysis, idx) => (
+                {analyses.slice(0, 10).map((item, idx) => (
                   <tr key={idx} className="border-b border-terminal-border hover:bg-terminal-border transition-colors">
                     <td className="py-3 px-4">
-                      <span className="font-mono font-bold text-terminal-orange">{analysis.ticker}</span>
+                      <span className="font-mono font-bold text-terminal-orange">{item.call?.ticker || 'N/A'}</span>
                     </td>
                     <td className="py-3 px-4">
                       <span className={`font-semibold ${
-                        analysis.sentiment_label === 'positive' ? 'text-terminal-green' :
-                        analysis.sentiment_label === 'negative' ? 'text-terminal-red' :
+                        item.analysis?.sentiment_label === 'positive' ? 'text-terminal-green' :
+                        item.analysis?.sentiment_label === 'negative' ? 'text-terminal-red' :
                         'text-terminal-yellow'
                       }`}>
-                        {analysis.sentiment_label?.toUpperCase()}
+                        {item.analysis?.sentiment_label?.toUpperCase() || 'N/A'}
                       </span>
                     </td>
                     <td className="py-3 px-4">
                       <span className="font-mono text-terminal-text">
-                        {(analysis.sentiment_score * 100).toFixed(1)}%
+                        {item.call?.sentiment_score ? (item.call.sentiment_score * 100).toFixed(1) : 'N/A'}%
                       </span>
                     </td>
                     <td className="py-3 px-4">
                       <span className={`font-semibold ${
-                        analysis.macro_regime === 'BULL' ? 'text-terminal-green' :
-                        analysis.macro_regime === 'BEAR' ? 'text-terminal-red' :
+                        item.analysis?.macro_regime === 'BULL' ? 'text-terminal-green' :
+                        item.analysis?.macro_regime === 'BEAR' ? 'text-terminal-red' :
                         'text-terminal-yellow'
                       }`}>
-                        {analysis.macro_regime}
+                        {item.analysis?.macro_regime || 'N/A'}
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <span className="text-terminal-text">{(analysis.confidence * 100).toFixed(0)}%</span>
+                      <span className="text-terminal-text">
+                        {item.analysis?.confidence ? (item.analysis.confidence * 100).toFixed(0) : 'N/A'}%
+                      </span>
                     </td>
                     <td className="py-3 px-4">
                       <span className="text-terminal-text-dim text-sm">
-                        {new Date(analysis.timestamp).toLocaleDateString()}
+                        {item.analysis?.timestamp ? new Date(item.analysis.timestamp).toLocaleDateString() : 'N/A'}
                       </span>
                     </td>
                   </tr>
