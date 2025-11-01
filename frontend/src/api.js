@@ -7,6 +7,8 @@ import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+console.log('🔗 API Base URL:', API_BASE_URL);
+
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -16,21 +18,68 @@ const apiClient = axios.create({
   },
 });
 
+// Request interceptor for debugging
+apiClient.interceptors.request.use(
+  (config) => {
+    console.log('📤 API Request:', {
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      baseURL: config.baseURL,
+      fullURL: `${config.baseURL}${config.url}`,
+      data: config.data,
+      params: config.params
+    });
+    return config;
+  },
+  (error) => {
+    console.error('❌ Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('📥 API Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+      url: response.config.url
+    });
+    return response;
+  },
   (error) => {
+    console.error('❌ API Error Details:', {
+      message: error.message,
+      code: error.code,
+      response: error.response ? {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      } : 'No response',
+      request: error.request ? 'Request was made but no response received' : 'No request made',
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        baseURL: error.config?.baseURL
+      }
+    });
+
     if (error.response) {
-      // Server responded with error status
-      console.error('API Error:', error.response.data);
-      throw new Error(error.response.data.error || 'API request failed');
+      // Server responded with error status (4xx, 5xx)
+      const errorMessage = error.response.data?.error ||
+                          error.response.data?.message ||
+                          error.response.statusText ||
+                          'API request failed';
+      console.error('🚨 Server Error:', errorMessage);
+      throw new Error(errorMessage);
     } else if (error.request) {
       // Request made but no response
-      console.error('Network Error:', error.request);
-      throw new Error('Cannot connect to backend. Please ensure the API server is running.');
+      console.error('🚨 Network Error: No response from server');
+      throw new Error(`Cannot connect to backend at ${API_BASE_URL}. Please ensure the API server is running on port 8000.`);
     } else {
       // Something else happened
-      console.error('Error:', error.message);
+      console.error('🚨 Unknown Error:', error.message);
       throw error;
     }
   }

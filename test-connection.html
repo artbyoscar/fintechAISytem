@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Connection Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #2a2a2a;
+            border: 1px solid #ff6b35;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #ff8555;
+        }
+        .result {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .success {
+            color: #00c853;
+        }
+        .error {
+            color: #ff1744;
+        }
+        .info {
+            color: #2196f3;
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Fintech AI System - Connection Test</h1>
+
+        <div class="test-section">
+            <h2>1. Backend API Health Check</h2>
+            <button onclick="testHealth()">Test /health Endpoint</button>
+            <div id="health-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>2. Analyze Company</h2>
+            <button onclick="testAnalyze('AAPL')">Analyze AAPL</button>
+            <button onclick="testAnalyze('NVDA')">Analyze NVDA</button>
+            <button onclick="testAnalyze('MSFT')">Analyze MSFT</button>
+            <div id="analyze-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>3. Recent Analyses</h2>
+            <button onclick="testRecent()">Get Recent Analyses</button>
+            <div id="recent-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Database Stats</h2>
+            <button onclick="testStats()">Get Stats</button>
+            <div id="stats-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type;
+            element.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+
+        async function testHealth() {
+            const resultId = 'health-result';
+            log(resultId, '⏳ Testing /health endpoint...', 'info');
+
+            try {
+                console.log('🔗 Fetching:', `${API_BASE_URL}/health`);
+
+                const response = await fetch(`${API_BASE_URL}/health`);
+                console.log('📥 Response:', response);
+
+                const data = await response.json();
+                console.log('📊 Data:', data);
+
+                if (data.success) {
+                    log(resultId, `
+<pre class="success">✅ SUCCESS!
+
+Status: ${response.status} ${response.statusText}
+Environment: ${data.data.environment}
+Database: ${data.data.database_connected ? '✓ Connected' : '✗ Disconnected'}
+Models Loaded: ${data.data.models_loaded ? '✓ Yes' : '✗ No'}
+
+API Keys:
+  - Alpha Vantage: ${data.data.api_keys_configured.alpha_vantage ? '✓' : '✗'}
+  - FRED API: ${data.data.api_keys_configured.fred_api ? '✓' : '✗'}
+  - Anthropic: ${data.data.api_keys_configured.anthropic ? '✓' : '✗'}
+
+Timestamp: ${data.timestamp}
+</pre>`, 'success');
+                } else {
+                    log(resultId, `<pre class="error">❌ API returned success=false\n\n${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                log(resultId, `
+<pre class="error">❌ CONNECTION FAILED!
+
+Error: ${error.message}
+
+Possible causes:
+1. Backend is not running (start with: python run_api.py)
+2. Backend is on wrong port (should be 8000)
+3. CORS is blocked (check browser console)
+4. Network firewall blocking connection
+
+Check browser console (F12) for more details.
+</pre>`, 'error');
+            }
+        }
+
+        async function testAnalyze(ticker) {
+            const resultId = 'analyze-result';
+            log(resultId, `⏳ Analyzing ${ticker}...`, 'info');
+
+            try {
+                console.log('🔗 Fetching:', `${API_BASE_URL}/analyze`, { ticker });
+
+                const response = await fetch(`${API_BASE_URL}/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ticker })
+                });
+                console.log('📥 Response:', response);
+
+                const data = await response.json();
+                console.log('📊 Data:', data);
+
+                if (data.success) {
+                    const analysis = data.data;
+                    log(resultId, `
+<pre class="success">✅ ${ticker} ANALYSIS COMPLETE!
+
+Company: ${analysis.company}
+Sentiment: ${analysis.sentiment_analysis.overall_label.toUpperCase()} (${(analysis.sentiment_analysis.sentiment_score * 100).toFixed(1)}%)
+Confidence: ${(analysis.sentiment_analysis.confidence * 100).toFixed(1)}%
+
+Macro Regime: ${analysis.macro_regime.regime} (${(analysis.macro_regime.confidence * 100).toFixed(1)}% confidence)
+Recommendation: ${analysis.recommendation.action}
+
+Overall Verdict: ${analysis.overall_assessment.verdict}
+
+Analysis Time: ${(analysis.performance.timings.total_pipeline * 1000).toFixed(0)}ms
+</pre>`, 'success');
+                } else {
+                    log(resultId, `<pre class="error">❌ Analysis failed\n\n${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                log(resultId, `<pre class="error">❌ REQUEST FAILED!\n\nError: ${error.message}</pre>`, 'error');
+            }
+        }
+
+        async function testRecent() {
+            const resultId = 'recent-result';
+            log(resultId, '⏳ Fetching recent analyses...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/recent?limit=5`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const analyses = data.data.analyses;
+                    let output = `✅ Found ${data.data.count} analyses\n\n`;
+
+                    analyses.forEach((item, i) => {
+                        output += `${i + 1}. ${item.call.ticker} (${item.call.call_date})\n`;
+                        output += `   Sentiment: ${item.analysis.sentiment_label} (${(item.analysis.confidence * 100).toFixed(1)}%)\n`;
+                        output += `   Regime: ${item.analysis.macro_regime}\n\n`;
+                    });
+
+                    log(resultId, `<pre class="success">${output}</pre>`, 'success');
+                } else {
+                    log(resultId, `<pre class="error">❌ Failed\n\n${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                log(resultId, `<pre class="error">❌ REQUEST FAILED!\n\nError: ${error.message}</pre>`, 'error');
+            }
+        }
+
+        async function testStats() {
+            const resultId = 'stats-result';
+            log(resultId, '⏳ Fetching database stats...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/stats`);
+                const data = await response.json();
+
+                if (data.success) {
+                    log(resultId, `<pre class="success">✅ DATABASE STATS\n\n${JSON.stringify(data.data, null, 2)}</pre>`, 'success');
+                } else {
+                    log(resultId, `<pre class="error">❌ Failed\n\n${JSON.stringify(data, null, 2)}</pre>`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Error:', error);
+                log(resultId, `<pre class="error">❌ REQUEST FAILED!\n\nError: ${error.message}</pre>`, 'error');
+            }
+        }
+
+        // Auto-run health check on load
+        window.addEventListener('load', () => {
+            setTimeout(testHealth, 500);
+        });
+    </script>
+</body>
+</html>
