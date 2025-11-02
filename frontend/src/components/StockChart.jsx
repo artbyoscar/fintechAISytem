@@ -10,6 +10,7 @@ import {
   Legend,
   ResponsiveContainer,
   ReferenceLine,
+  ReferenceArea,
   Area
 } from 'recharts'
 import axios from 'axios'
@@ -19,7 +20,7 @@ import axios from 'axios'
  * Interactive stock chart with candlesticks, volume, technical indicators, and drawing tools
  * Optimized with data caching, prefetching, and debouncing for fast timeframe switching
  */
-export default function StockChart({ ticker, onPriceUpdate }) {
+export default function StockChart({ ticker, onPriceUpdate, onTimeframeChange }) {
   const [timeRange, setTimeRange] = useState('3M')
   const [showSMA20, setShowSMA20] = useState(true)
   const [showSMA50, setShowSMA50] = useState(true)
@@ -33,6 +34,29 @@ export default function StockChart({ ticker, onPriceUpdate }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [marketData, setMarketData] = useState(null)
+
+  // New indicator visibility state
+  const [showBollingerBands, setShowBollingerBands] = useState(false)
+  const [showVWAP, setShowVWAP] = useState(false)
+  const [showParabolicSAR, setShowParabolicSAR] = useState(false)
+  const [showStochastic, setShowStochastic] = useState(false)
+  const [showATR, setShowATR] = useState(false)
+  const [showADX, setShowADX] = useState(false)
+  const [showCCI, setShowCCI] = useState(false)
+  const [showWilliamsR, setShowWilliamsR] = useState(false)
+  const [showOBV, setShowOBV] = useState(false)
+  const [showMFI, setShowMFI] = useState(false)
+
+  // Zoom state for click-and-drag zoom functionality
+  const [zoomState, setZoomState] = useState({
+    left: 'dataMin',
+    right: 'dataMax',
+    refAreaLeft: '',
+    refAreaRight: '',
+    top: 'dataMax+50',
+    bottom: 'dataMin-50',
+    animation: true
+  })
 
   // Performance optimizations
   const [dataCache, setDataCache] = useState({}) // Cache for all timeframes
@@ -202,6 +226,41 @@ export default function StockChart({ ticker, onPriceUpdate }) {
     }
   }, [marketData, onPriceUpdate])
 
+  // Calculate and emit timeframe-specific price changes
+  useEffect(() => {
+    // Safety checks to prevent errors with empty or invalid data
+    if (!dataWithIndicators || !Array.isArray(dataWithIndicators) || dataWithIndicators.length === 0) {
+      return
+    }
+
+    if (onTimeframeChange && dataWithIndicators && dataWithIndicators.length > 0) {
+      const latest = dataWithIndicators[dataWithIndicators.length - 1]
+      const oldest = dataWithIndicators[0]
+
+      // Additional null safety for close prices
+      if (!latest?.close || !oldest?.close) {
+        return
+      }
+
+      // Calculate change over the timeframe
+      const change = latest.close - oldest.close
+      const changePercent = (change / oldest.close) * 100
+
+      // Emit the data
+      if (typeof onTimeframeChange === 'function') {
+        onTimeframeChange({
+          change,
+          changePercent,
+          timeframe: timeRange,
+          oldestPrice: oldest.close,
+          latestPrice: latest.close,
+          oldestDate: oldest.date,
+          latestDate: latest.date
+        })
+      }
+    }
+  }, [dataWithIndicators, timeRange, onTimeframeChange])
+
   // Get raw data from API response or empty array
   const rawData = useMemo(() => {
     if (!marketData || !marketData.data) {
@@ -215,6 +274,40 @@ export default function StockChart({ ticker, onPriceUpdate }) {
     // API already returns data with all indicators calculated
     return rawData
   }, [rawData])
+
+  // Zoom handler functions
+  const zoom = () => {
+    if (zoomState.refAreaLeft === zoomState.refAreaRight || !zoomState.refAreaRight) {
+      setZoomState(prev => ({ ...prev, refAreaLeft: '', refAreaRight: '' }))
+      return
+    }
+
+    let { refAreaLeft, refAreaRight } = zoomState
+
+    if (refAreaLeft > refAreaRight) {
+      [refAreaLeft, refAreaRight] = [refAreaRight, refAreaLeft]
+    }
+
+    setZoomState({
+      refAreaLeft: '',
+      refAreaRight: '',
+      left: refAreaLeft,
+      right: refAreaRight,
+      top: 'dataMax+50',
+      bottom: 'dataMin-50'
+    })
+  }
+
+  const zoomOut = () => {
+    setZoomState({
+      left: 'dataMin',
+      right: 'dataMax',
+      refAreaLeft: '',
+      refAreaRight: '',
+      top: 'dataMax+50',
+      bottom: 'dataMin-50'
+    })
+  }
 
   // Time range buttons
   const timeRanges = ['1D', '5D', '1M', '3M', '6M', '1Y', '5Y', 'MAX']
@@ -500,7 +593,7 @@ export default function StockChart({ ticker, onPriceUpdate }) {
       {/* Controls */}
       <div className="space-y-4 mb-6">
         {/* Time Range Selector */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
           {timeRanges.map(range => {
             const cacheKey = `${ticker}_${range}`
             const isCached = dataCache[cacheKey] !== undefined
@@ -523,6 +616,20 @@ export default function StockChart({ ticker, onPriceUpdate }) {
               </button>
             )
           })}
+
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-2 ml-4 border-l border-fintech-border pl-4">
+            <button
+              onClick={zoomOut}
+              className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+              title="Reset zoom to full view"
+            >
+              Reset Zoom
+            </button>
+            <span className="text-xs text-gray-400">
+              Click & drag to zoom
+            </span>
+          </div>
         </div>
 
         {/* Indicators Toggle */}
@@ -586,6 +693,106 @@ export default function StockChart({ ticker, onPriceUpdate }) {
             />
             <span className="text-terminal-text-dim">RSI(14)</span>
           </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showBollingerBands}
+              onChange={(e) => setShowBollingerBands(e.target.checked)}
+              className="w-3 h-3"
+            />
+            <span className="text-terminal-text-dim">Bollinger Bands</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showVWAP}
+              onChange={(e) => setShowVWAP(e.target.checked)}
+              className="w-3 h-3"
+            />
+            <span className="text-cyan-400">VWAP</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showParabolicSAR}
+              onChange={(e) => setShowParabolicSAR(e.target.checked)}
+              className="w-3 h-3"
+            />
+            <span className="text-red-400">Parabolic SAR</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showStochastic}
+              onChange={(e) => setShowStochastic(e.target.checked)}
+              className="w-3 h-3"
+            />
+            <span className="text-terminal-text-dim">Stochastic</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showATR}
+              onChange={(e) => setShowATR(e.target.checked)}
+              className="w-3 h-3"
+            />
+            <span className="text-terminal-text-dim">ATR</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showADX}
+              onChange={(e) => setShowADX(e.target.checked)}
+              className="w-3 h-3"
+            />
+            <span className="text-terminal-text-dim">ADX</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showCCI}
+              onChange={(e) => setShowCCI(e.target.checked)}
+              className="w-3 h-3"
+            />
+            <span className="text-terminal-text-dim">CCI</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showWilliamsR}
+              onChange={(e) => setShowWilliamsR(e.target.checked)}
+              className="w-3 h-3"
+            />
+            <span className="text-terminal-text-dim">Williams %R</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showOBV}
+              onChange={(e) => setShowOBV(e.target.checked)}
+              className="w-3 h-3"
+            />
+            <span className="text-terminal-text-dim">OBV</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showMFI}
+              onChange={(e) => setShowMFI(e.target.checked)}
+              className="w-3 h-3"
+            />
+            <span className="text-terminal-text-dim">MFI</span>
+          </label>
         </div>
 
         {/* Drawing Tools */}
@@ -633,10 +840,24 @@ export default function StockChart({ ticker, onPriceUpdate }) {
             data={dataWithIndicators}
             margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
             onClick={handleChartClick}
+            onMouseDown={(e) => {
+              if (e && e.activeLabel) {
+                setZoomState({ ...zoomState, refAreaLeft: e.activeLabel })
+              }
+            }}
+            onMouseMove={(e) => {
+              if (zoomState.refAreaLeft && e && e.activeLabel) {
+                setZoomState({ ...zoomState, refAreaRight: e.activeLabel })
+              }
+            }}
+            onMouseUp={zoom}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
             <XAxis
               dataKey="date"
+              domain={[zoomState.left, zoomState.right]}
+              type="category"
+              allowDataOverflow
               stroke="#999999"
               tick={{ fill: '#999999', fontSize: 11 }}
               tickFormatter={(value) => formatDate(value, timeRange)}
@@ -717,6 +938,88 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 strokeOpacity={0.9}
               />
             )}
+
+            {/* Bollinger Bands */}
+            {showBollingerBands && dataWithIndicators.some(p => p.bb_upper != null) && (
+              <>
+                <Line
+                  yAxisId="price"
+                  type="monotone"
+                  dataKey="bb_upper"
+                  stroke="#ef4444"
+                  strokeWidth={1.5}
+                  dot={false}
+                  name="BB Upper"
+                  connectNulls={true}
+                  strokeOpacity={0.7}
+                  strokeDasharray="3 3"
+                />
+                <Line
+                  yAxisId="price"
+                  type="monotone"
+                  dataKey="bb_middle"
+                  stroke="#94a3b8"
+                  strokeWidth={1.5}
+                  dot={false}
+                  name="BB Middle"
+                  connectNulls={true}
+                  strokeOpacity={0.7}
+                />
+                <Line
+                  yAxisId="price"
+                  type="monotone"
+                  dataKey="bb_lower"
+                  stroke="#10b981"
+                  strokeWidth={1.5}
+                  dot={false}
+                  name="BB Lower"
+                  connectNulls={true}
+                  strokeOpacity={0.7}
+                  strokeDasharray="3 3"
+                />
+              </>
+            )}
+
+            {/* VWAP */}
+            {showVWAP && dataWithIndicators.some(p => p.vwap != null) && (
+              <Line
+                yAxisId="price"
+                type="monotone"
+                dataKey="vwap"
+                stroke="#06b6d4"
+                strokeWidth={2}
+                dot={false}
+                name="VWAP"
+                connectNulls={true}
+                strokeOpacity={0.8}
+              />
+            )}
+
+            {/* Parabolic SAR */}
+            {showParabolicSAR && dataWithIndicators.some(p => p.sar != null) && (
+              <Line
+                yAxisId="price"
+                type="monotone"
+                dataKey="sar"
+                stroke="#ef4444"
+                strokeWidth={0}
+                dot={{ r: 2, fill: '#ef4444' }}
+                name="Parabolic SAR"
+                connectNulls={false}
+              />
+            )}
+
+            {/* Zoom selection area */}
+            {zoomState.refAreaLeft && zoomState.refAreaRight && (
+              <ReferenceArea
+                yAxisId="price"
+                x1={zoomState.refAreaLeft}
+                x2={zoomState.refAreaRight}
+                strokeOpacity={0.3}
+                fill="#00d4ff"
+                fillOpacity={0.2}
+              />
+            )}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
@@ -737,17 +1040,40 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 tickFormatter={(value) => formatDate(value, timeRange)}
               />
               <YAxis
+                yAxisId="volume"
                 stroke="#999999"
                 tick={{ fill: '#999999', fontSize: 11 }}
                 tickFormatter={(value) => formatVolume(value)}
               />
+              {showOBV && dataWithIndicators.some(p => p.obv != null) && (
+                <YAxis
+                  yAxisId="obv"
+                  orientation="right"
+                  stroke="#10b981"
+                  tick={{ fill: '#10b981', fontSize: 11 }}
+                  tickFormatter={(value) => formatVolume(value)}
+                />
+              )}
               <Tooltip content={<CustomTooltip />} />
               <Bar
+                yAxisId="volume"
                 dataKey="volume"
                 fill="#ff6b35"
                 opacity={0.6}
                 name="Volume"
               />
+              {showOBV && dataWithIndicators.some(p => p.obv != null) && (
+                <Line
+                  yAxisId="obv"
+                  type="monotone"
+                  dataKey="obv"
+                  stroke="#10b981"
+                  strokeWidth={2}
+                  dot={false}
+                  name="OBV"
+                  connectNulls={true}
+                />
+              )}
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -806,7 +1132,7 @@ export default function StockChart({ ticker, onPriceUpdate }) {
 
       {/* RSI Chart */}
       {showRSI && dataWithIndicators.some(p => p.rsi != null) && (
-        <div>
+        <div className="mb-4">
           <h4 className="text-xs text-terminal-text-dim mb-2">RSI(14)</h4>
           <ResponsiveContainer width="100%" height={120}>
             <ComposedChart
@@ -843,6 +1169,255 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 dataKey="rsi"
                 stroke="transparent"
                 fill="#ff6b35"
+                fillOpacity={0.2}
+                connectNulls={true}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Stochastic Oscillator Chart */}
+      {showStochastic && dataWithIndicators.some(p => p.stoch_k != null) && (
+        <div className="mb-4">
+          <h4 className="text-xs text-terminal-text-dim mb-2">Stochastic Oscillator</h4>
+          <ResponsiveContainer width="100%" height={120}>
+            <ComposedChart
+              data={dataWithIndicators}
+              margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+              <XAxis
+                dataKey="date"
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+                tickFormatter={(value) => formatDate(value, timeRange)}
+              />
+              <YAxis
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+                domain={[0, 100]}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <ReferenceLine y={80} stroke="#ff1744" strokeDasharray="3 3" label={{ value: 'Overbought', fill: '#ff1744', fontSize: 10 }} />
+              <ReferenceLine y={20} stroke="#00c853" strokeDasharray="3 3" label={{ value: 'Oversold', fill: '#00c853', fontSize: 10 }} />
+              <Line
+                type="monotone"
+                dataKey="stoch_k"
+                stroke="#1a659e"
+                strokeWidth={2}
+                dot={false}
+                name="%K"
+                connectNulls={true}
+              />
+              <Line
+                type="monotone"
+                dataKey="stoch_d"
+                stroke="#ff6b35"
+                strokeWidth={2}
+                dot={false}
+                name="%D"
+                connectNulls={true}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* ATR Chart */}
+      {showATR && dataWithIndicators.some(p => p.atr != null) && (
+        <div className="mb-4">
+          <h4 className="text-xs text-terminal-text-dim mb-2">ATR (Average True Range)</h4>
+          <ResponsiveContainer width="100%" height={120}>
+            <ComposedChart
+              data={dataWithIndicators}
+              margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+              <XAxis
+                dataKey="date"
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+                tickFormatter={(value) => formatDate(value, timeRange)}
+              />
+              <YAxis
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Line
+                type="monotone"
+                dataKey="atr"
+                stroke="#a855f7"
+                strokeWidth={2}
+                dot={false}
+                name="ATR"
+                connectNulls={true}
+              />
+              <Area
+                type="monotone"
+                dataKey="atr"
+                stroke="transparent"
+                fill="#a855f7"
+                fillOpacity={0.2}
+                connectNulls={true}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* ADX Chart */}
+      {showADX && dataWithIndicators.some(p => p.adx != null) && (
+        <div className="mb-4">
+          <h4 className="text-xs text-terminal-text-dim mb-2">ADX (Average Directional Index)</h4>
+          <ResponsiveContainer width="100%" height={120}>
+            <ComposedChart
+              data={dataWithIndicators}
+              margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+              <XAxis
+                dataKey="date"
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+                tickFormatter={(value) => formatDate(value, timeRange)}
+              />
+              <YAxis
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+                domain={[0, 100]}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <ReferenceLine y={25} stroke="#00c853" strokeDasharray="3 3" label={{ value: 'Strong Trend', fill: '#00c853', fontSize: 10 }} />
+              <Line
+                type="monotone"
+                dataKey="adx"
+                stroke="#667eea"
+                strokeWidth={2}
+                dot={false}
+                name="ADX"
+                connectNulls={true}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* CCI Chart */}
+      {showCCI && dataWithIndicators.some(p => p.cci != null) && (
+        <div className="mb-4">
+          <h4 className="text-xs text-terminal-text-dim mb-2">CCI (Commodity Channel Index)</h4>
+          <ResponsiveContainer width="100%" height={120}>
+            <ComposedChart
+              data={dataWithIndicators}
+              margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+              <XAxis
+                dataKey="date"
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+                tickFormatter={(value) => formatDate(value, timeRange)}
+              />
+              <YAxis
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <ReferenceLine y={100} stroke="#ff1744" strokeDasharray="3 3" label={{ value: 'Overbought', fill: '#ff1744', fontSize: 10 }} />
+              <ReferenceLine y={-100} stroke="#00c853" strokeDasharray="3 3" label={{ value: 'Oversold', fill: '#00c853', fontSize: 10 }} />
+              <ReferenceLine y={0} stroke="#666666" strokeDasharray="3 3" />
+              <Line
+                type="monotone"
+                dataKey="cci"
+                stroke="#f59e0b"
+                strokeWidth={2}
+                dot={false}
+                name="CCI"
+                connectNulls={true}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* Williams %R Chart */}
+      {showWilliamsR && dataWithIndicators.some(p => p.williams_r != null) && (
+        <div className="mb-4">
+          <h4 className="text-xs text-terminal-text-dim mb-2">Williams %R</h4>
+          <ResponsiveContainer width="100%" height={120}>
+            <ComposedChart
+              data={dataWithIndicators}
+              margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+              <XAxis
+                dataKey="date"
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+                tickFormatter={(value) => formatDate(value, timeRange)}
+              />
+              <YAxis
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+                domain={[-100, 0]}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <ReferenceLine y={-20} stroke="#ff1744" strokeDasharray="3 3" label={{ value: 'Overbought', fill: '#ff1744', fontSize: 10 }} />
+              <ReferenceLine y={-80} stroke="#00c853" strokeDasharray="3 3" label={{ value: 'Oversold', fill: '#00c853', fontSize: 10 }} />
+              <Line
+                type="monotone"
+                dataKey="williams_r"
+                stroke="#ec4899"
+                strokeWidth={2}
+                dot={false}
+                name="Williams %R"
+                connectNulls={true}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {/* MFI Chart */}
+      {showMFI && dataWithIndicators.some(p => p.mfi != null) && (
+        <div className="mb-4">
+          <h4 className="text-xs text-terminal-text-dim mb-2">MFI (Money Flow Index)</h4>
+          <ResponsiveContainer width="100%" height={120}>
+            <ComposedChart
+              data={dataWithIndicators}
+              margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
+              <XAxis
+                dataKey="date"
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+                tickFormatter={(value) => formatDate(value, timeRange)}
+              />
+              <YAxis
+                stroke="#999999"
+                tick={{ fill: '#999999', fontSize: 11 }}
+                domain={[0, 100]}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <ReferenceLine y={80} stroke="#ff1744" strokeDasharray="3 3" label={{ value: 'Overbought', fill: '#ff1744', fontSize: 10 }} />
+              <ReferenceLine y={20} stroke="#00c853" strokeDasharray="3 3" label={{ value: 'Oversold', fill: '#00c853', fontSize: 10 }} />
+              <Line
+                type="monotone"
+                dataKey="mfi"
+                stroke="#14b8a6"
+                strokeWidth={2}
+                dot={false}
+                name="MFI"
+                connectNulls={true}
+              />
+              <Area
+                type="monotone"
+                dataKey="mfi"
+                stroke="transparent"
+                fill="#14b8a6"
                 fillOpacity={0.2}
                 connectNulls={true}
               />

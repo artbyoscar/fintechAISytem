@@ -23,6 +23,11 @@ const formatPercent = (value) => {
 export default function AnalysisResultsNew({ result }) {
   const [currentPrice, setCurrentPrice] = useState(null)
   const [priceChange, setPriceChange] = useState(null)
+  const [timeframeChange, setTimeframeChange] = useState({
+    change: 0,
+    changePercent: 0,
+    timeframe: '3M'
+  })
 
   if (!result) return null
 
@@ -99,6 +104,11 @@ export default function AnalysisResultsNew({ result }) {
     }
   }
 
+  // Handler for timeframe-specific price changes from StockChart
+  const handleTimeframeChange = (changeData) => {
+    setTimeframeChange(changeData)
+  }
+
   // Calculate price change based on available data
   const isPositive = priceChange ? priceChange.percent > 0 : (result.sentiment_analysis?.sentiment_score || 0) > 0
 
@@ -125,12 +135,30 @@ export default function AnalysisResultsNew({ result }) {
                 <div className="price-hero">
                   {currentPrice != null ? `$${formatPrice(currentPrice)}` : 'Loading...'}
                 </div>
-                {priceChange && (
+
+                {/* Timeframe-specific price change */}
+                {timeframeChange && timeframeChange.change !== 0 && (
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className={`text-lg font-bold ${timeframeChange.change >= 0 ? 'text-fintech-green' : 'text-fintech-red'}`}>
+                      {timeframeChange.change >= 0 ? '+' : ''}${formatPrice(Math.abs(timeframeChange.change))}
+                    </span>
+                    <span className={`text-sm font-semibold ${timeframeChange.change >= 0 ? 'text-fintech-green' : 'text-fintech-red'}`}>
+                      ({timeframeChange.change >= 0 ? '+' : ''}{formatPercent(timeframeChange.changePercent)}%)
+                    </span>
+                    <span className="text-xs text-gray-400 font-mono">
+                      {timeframeChange.timeframe}
+                    </span>
+                  </div>
+                )}
+
+                {/* Fallback to daily price change if no timeframe data yet */}
+                {(!timeframeChange || timeframeChange.change === 0) && priceChange && (
                   <div className={`text-sm font-semibold mt-1 ${priceChange.percent >= 0 ? 'text-fintech-green' : 'text-fintech-red'}`}>
                     {priceChange.percent >= 0 ? '+' : ''}${formatPrice(Math.abs(priceChange.amount))} ({priceChange.percent >= 0 ? '+' : ''}{formatPercent(priceChange.percent)}%)
                   </div>
                 )}
-                {!priceChange && currentPrice == null && (
+
+                {!priceChange && !timeframeChange && currentPrice == null && (
                   <div className="text-xs text-gray-500 mt-1">
                     Fetching price...
                   </div>
@@ -189,7 +217,11 @@ export default function AnalysisResultsNew({ result }) {
         <div className="flex gap-6">
           {/* Left Column: Chart (70%) */}
           <div className="flex-[7] min-w-0">
-            <StockChart ticker={result.ticker} onPriceUpdate={handlePriceUpdate} />
+            <StockChart
+              ticker={result.ticker}
+              onPriceUpdate={handlePriceUpdate}
+              onTimeframeChange={handleTimeframeChange}
+            />
 
             {/* Trading Recommendation Below Chart */}
             {result.recommendation && (
