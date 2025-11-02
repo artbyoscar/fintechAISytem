@@ -16,14 +16,25 @@ export default function AnalysisResultsNew({ result }) {
   if (!result) return null
 
   // Callback to receive price data from StockChart
+  // IMPORTANT: Always use the most recent date's price, not the last item in the array
   const handlePriceUpdate = (priceData) => {
     if (priceData && priceData.length > 0) {
-      const latest = priceData[priceData.length - 1]
-      const previous = priceData[priceData.length - 2] || latest
+      // Sort by date to ensure we always get the most recent price
+      // regardless of which timeframe is selected
+      const sortedData = [...priceData].sort((a, b) =>
+        new Date(b.date) - new Date(a.date)
+      )
 
-      setCurrentPrice(latest.close)
+      // Use the most recent date's price (index 0 after sorting descending)
+      const mostRecent = sortedData[0]
+      const previous = sortedData[1] || mostRecent
 
-      const change = latest.close - previous.close
+      console.log(`📊 Latest price: ${mostRecent.date} = $${mostRecent.close.toFixed(2)}`)
+
+      setCurrentPrice(mostRecent.close)
+
+      // Calculate change from previous trading day
+      const change = mostRecent.close - previous.close
       const changePercent = (change / previous.close) * 100
 
       setPriceChange({

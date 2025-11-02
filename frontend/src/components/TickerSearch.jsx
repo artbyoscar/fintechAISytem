@@ -51,11 +51,36 @@ export default function TickerSearch({ onAnalyze, loading, disabled }) {
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               placeholder="Enter ticker symbol (e.g., AAPL, MSFT, NVDA)"
-              className="input-field w-full text-lg"
+              className="input-field w-full text-lg pr-10"
               disabled={loading || disabled}
               maxLength={10}
               autoComplete="off"
             />
+
+            {/* Clear button - only show when there's text */}
+            {ticker && (
+              <button
+                type="button"
+                onClick={() => {
+                  setTicker('')
+                  setShowSuggestions(true)
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                aria-label="Clear"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            )}
 
             {/* Autocomplete Suggestions */}
             {showSuggestions && filteredSuggestions.length > 0 && (

@@ -149,6 +149,7 @@ class MarketDataAgent:
             }
 
             logger.info(f"Fetching daily data for {ticker}")
+            logger.debug(f"API params: {params}")
             response = requests.get(self.base_url, params=params, timeout=10)
             response.raise_for_status()
 
@@ -257,15 +258,20 @@ class MarketDataAgent:
         data_points = []
 
         for timestamp, values in sorted(time_series.items()):
+            close_price = float(values.get('4. close', 0))
             data_points.append({
                 'date': timestamp,
                 'timestamp': self._parse_timestamp(timestamp),
                 'open': float(values.get('1. open', 0)),
                 'high': float(values.get('2. high', 0)),
                 'low': float(values.get('3. low', 0)),
-                'close': float(values.get('4. close', 0)),
+                'close': close_price,
                 'volume': int(values.get('5. volume', 0))
             })
+
+        # Log latest price for debugging
+        if data_points:
+            logger.info(f"{ticker} latest close price: ${data_points[-1]['close']:.2f}")
 
         return {
             'ticker': ticker,

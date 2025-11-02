@@ -20,7 +20,7 @@ import axios from 'axios'
  * Optimized with data caching, prefetching, and debouncing for fast timeframe switching
  */
 export default function StockChart({ ticker, onPriceUpdate }) {
-  const [timeRange, setTimeRange] = useState('1M')
+  const [timeRange, setTimeRange] = useState('3M')
   const [showSMA20, setShowSMA20] = useState(true)
   const [showSMA50, setShowSMA50] = useState(true)
   const [showSMA200, setShowSMA200] = useState(false)
@@ -481,6 +481,22 @@ export default function StockChart({ ticker, onPriceUpdate }) {
         </div>
       )}
 
+      {/* Indicator Data Warning */}
+      {dataWithIndicators && dataWithIndicators.length > 0 && (
+        <>
+          {(showRSI && dataWithIndicators.filter(p => p.rsi != null).length < 14) ||
+           (showMACD && dataWithIndicators.filter(p => p.macd != null).length < 26) ||
+           (showSMA200 && dataWithIndicators.filter(p => p.sma200 != null).length < 200) ? (
+            <div className="mb-4 p-3 bg-yellow-900 bg-opacity-20 border border-yellow-600 rounded">
+              <p className="text-yellow-500 text-sm flex items-start gap-2">
+                <span>⚠️</span>
+                <span>Some indicators need more historical data to calculate accurately. Try selecting a longer timeframe (6M or 1Y) for complete indicator coverage.</span>
+              </p>
+            </div>
+          ) : null}
+        </>
+      )}
+
       {/* Controls */}
       <div className="space-y-4 mb-6">
         {/* Time Range Selector */}
@@ -662,7 +678,7 @@ export default function StockChart({ ticker, onPriceUpdate }) {
             />
 
             {/* Moving Averages */}
-            {showSMA20 && (
+            {showSMA20 && dataWithIndicators.some(p => p.sma20 != null) && (
               <Line
                 yAxisId="price"
                 type="monotone"
@@ -671,9 +687,10 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 strokeWidth={2}
                 dot={false}
                 name="SMA(20)"
+                connectNulls={true}
               />
             )}
-            {showSMA50 && (
+            {showSMA50 && dataWithIndicators.some(p => p.sma50 != null) && (
               <Line
                 yAxisId="price"
                 type="monotone"
@@ -682,9 +699,10 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 strokeWidth={2}
                 dot={false}
                 name="SMA(50)"
+                connectNulls={true}
               />
             )}
-            {showSMA200 && (
+            {showSMA200 && dataWithIndicators.some(p => p.sma200 != null) && (
               <Line
                 yAxisId="price"
                 type="monotone"
@@ -693,6 +711,7 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 strokeWidth={2}
                 dot={false}
                 name="SMA(200)"
+                connectNulls={true}
               />
             )}
           </ComposedChart>
@@ -732,7 +751,7 @@ export default function StockChart({ ticker, onPriceUpdate }) {
       )}
 
       {/* MACD Chart */}
-      {showMACD && (
+      {showMACD && dataWithIndicators.some(p => p.macd != null) && (
         <div className="mb-4">
           <h4 className="text-xs text-terminal-text-dim mb-2">MACD</h4>
           <ResponsiveContainer width="100%" height={120}>
@@ -760,6 +779,7 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 strokeWidth={2}
                 dot={false}
                 name="MACD"
+                connectNulls={true}
               />
               <Line
                 type="monotone"
@@ -768,6 +788,7 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 strokeWidth={2}
                 dot={false}
                 name="Signal"
+                connectNulls={true}
               />
               <Bar
                 dataKey="histogram"
@@ -781,7 +802,7 @@ export default function StockChart({ ticker, onPriceUpdate }) {
       )}
 
       {/* RSI Chart */}
-      {showRSI && (
+      {showRSI && dataWithIndicators.some(p => p.rsi != null) && (
         <div>
           <h4 className="text-xs text-terminal-text-dim mb-2">RSI(14)</h4>
           <ResponsiveContainer width="100%" height={120}>
@@ -812,6 +833,7 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 strokeWidth={2}
                 dot={false}
                 name="RSI"
+                connectNulls={true}
               />
               <Area
                 type="monotone"
@@ -819,6 +841,7 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 stroke="transparent"
                 fill="#ff6b35"
                 fillOpacity={0.2}
+                connectNulls={true}
               />
             </ComposedChart>
           </ResponsiveContainer>
