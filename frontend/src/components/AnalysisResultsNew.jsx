@@ -4,6 +4,17 @@ import SentimentCardCompact from './SentimentCardCompact'
 import MacroRegimeCardCompact from './MacroRegimeCardCompact'
 import StockChart from './StockChart'
 
+// Safe number formatting helpers
+const formatPrice = (value) => {
+  const num = parseFloat(value)
+  return !isNaN(num) ? num.toFixed(2) : '0.00'
+}
+
+const formatPercent = (value) => {
+  const num = parseFloat(value)
+  return !isNaN(num) ? num.toFixed(2) : '0.00'
+}
+
 /**
  * AnalysisResults Component - Modern Hybrid Design
  * Robinhood minimalism + Bloomberg Terminal information density
@@ -15,10 +26,54 @@ export default function AnalysisResultsNew({ result }) {
 
   if (!result) return null
 
+  // Fetch real-time current price from Yahoo Finance on mount
+  useEffect(() => {
+    const fetchCurrentPrice = async () => {
+      if (!result || !result.ticker) return
+
+      try {
+        const response = await fetch(
+          `http://localhost:8000/current-price/${result.ticker}`
+        )
+
+        const responseData = await response.json()
+
+        // Backend wraps response in {success: true, data: {...}}
+        const data = responseData.data || responseData
+
+        // Parse as numbers
+        const price = parseFloat(data.price)
+        const change = parseFloat(data.change || 0)
+        const changePercent = parseFloat(data.change_percent || 0)
+
+        if (isNaN(price)) {
+          throw new Error('Invalid price')
+        }
+
+        console.log(`✅ Yahoo: $${price.toFixed(2)}`)
+
+        setCurrentPrice(price)
+        setPriceChange({
+          amount: change,
+          percent: changePercent
+        })
+
+      } catch (error) {
+        console.error('Price error:', error)
+      }
+    }
+
+    if (result?.ticker) {
+      fetchCurrentPrice()
+    }
+  }, [result])
+
   // Callback to receive price data from StockChart
-  // IMPORTANT: Always use the most recent date's price, not the last item in the array
+  // IMPORTANT: Only used as fallback if Yahoo Finance fails
+  // Always use the most recent date's price, not the last item in the array
   const handlePriceUpdate = (priceData) => {
-    if (priceData && priceData.length > 0) {
+    // Only use chart data if Yahoo Finance price hasn't been set
+    if (currentPrice === null && priceData && priceData.length > 0) {
       // Sort by date to ensure we always get the most recent price
       // regardless of which timeframe is selected
       const sortedData = [...priceData].sort((a, b) =>
@@ -29,7 +84,7 @@ export default function AnalysisResultsNew({ result }) {
       const mostRecent = sortedData[0]
       const previous = sortedData[1] || mostRecent
 
-      console.log(`📊 Latest price: ${mostRecent.date} = $${mostRecent.close.toFixed(2)}`)
+      console.log(`📊 Fallback to chart data: ${mostRecent.date} = $${mostRecent.close.toFixed(2)}`)
 
       setCurrentPrice(mostRecent.close)
 
@@ -68,11 +123,11 @@ export default function AnalysisResultsNew({ result }) {
             <div className="flex items-baseline gap-4">
               <div className="text-right">
                 <div className="text-2xl font-bold text-white font-mono">
-                  {currentPrice != null ? `$${currentPrice.toFixed(2)}` : 'Loading...'}
+                  {currentPrice != null ? `$${formatPrice(currentPrice)}` : 'Loading...'}
                 </div>
                 {priceChange && (
                   <div className={`text-sm font-semibold ${priceChange.percent >= 0 ? 'text-fintech-green' : 'text-fintech-red'}`}>
-                    {priceChange.percent >= 0 ? '+' : ''}${priceChange.amount.toFixed(2)} ({priceChange.percent >= 0 ? '+' : ''}{priceChange.percent.toFixed(2)}%)
+                    {priceChange.percent >= 0 ? '+' : ''}${formatPrice(Math.abs(priceChange.amount))} ({priceChange.percent >= 0 ? '+' : ''}{formatPercent(priceChange.percent)}%)
                   </div>
                 )}
                 {!priceChange && currentPrice == null && (

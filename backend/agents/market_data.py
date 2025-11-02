@@ -925,6 +925,93 @@ class MarketDataAgent:
             'timestamp': time.time()
         }
 
+    def get_current_price_yahoo(self, ticker: str) -> Optional[Dict[str, Any]]:
+        """
+        Get real-time current price from Yahoo Finance.
+        This is FREE and has no API key requirements.
+        Data is real-time with ~15 second delay.
+
+        Uses direct Yahoo Finance API (no yfinance library) to avoid certificate issues.
+
+        Args:
+            ticker: Stock ticker symbol
+
+        Returns:
+            Dictionary with current price data or None if error
+        """
+        try:
+            logger.info(f"🔍 Fetching real-time price from Yahoo Finance for {ticker}")
+
+            # Use Yahoo Finance's public quote API directly
+            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=2d"
+
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+
+            data = response.json()
+
+            # Extract price data from response
+            chart = data.get('chart', {})
+            result_data = chart.get('result', [])
+
+            if not result_data:
+                logger.error(f"No data in Yahoo Finance response for {ticker}")
+                return None
+
+            quote = result_data[0]
+            meta = quote.get('meta', {})
+            indicators = quote.get('indicators', {})
+            quote_data = indicators.get('quote', [{}])[0]
+
+            # Get current price from meta
+            current_price = meta.get('regularMarketPrice')
+
+            # Get previous close
+            previous_close = meta.get('previousClose') or meta.get('chartPreviousClose')
+
+            # Fallback: get from close prices if meta doesn't have it
+            if not current_price:
+                close_prices = quote_data.get('close', [])
+                if close_prices:
+                    # Filter out None values and get last valid price
+                    valid_prices = [p for p in close_prices if p is not None]
+                    if valid_prices:
+                        current_price = valid_prices[-1]
+                        previous_close = valid_prices[-2] if len(valid_prices) > 1 else current_price
+
+            if not current_price:
+                logger.error(f"Could not extract price for {ticker}")
+                return None
+
+            # Calculate changes
+            if not previous_close:
+                previous_close = current_price
+
+            change = current_price - previous_close
+            change_percent = (change / previous_close * 100) if previous_close else 0
+
+            result = {
+                'ticker': ticker,
+                'price': round(float(current_price), 2),
+                'previous_close': round(float(previous_close), 2),
+                'change': round(float(change), 2),
+                'change_percent': round(float(change_percent), 2),
+                'timestamp': datetime.now().isoformat(),
+                'source': 'yahoo_finance'
+            }
+
+            logger.info(f"✅ Yahoo Finance - {ticker}: ${current_price:.2f} (change: {change_percent:+.2f}%)")
+            return result
+
+        except Exception as e:
+            logger.error(f"❌ Yahoo Finance error for {ticker}: {str(e)}")
+            logger.info("Price fetch failed, system will fall back to chart data")
+            return None
+
 
 if __name__ == "__main__":
     # Test the agent

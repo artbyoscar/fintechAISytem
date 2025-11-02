@@ -635,6 +635,57 @@ async def get_market_data(ticker: str, request: MarketDataRequest):
 
 
 @app.get(
+    "/current-price/{ticker}",
+    summary="Get Current Price",
+    description="Get real-time current price from Yahoo Finance (free, no API key required)"
+)
+async def get_current_price(ticker: str):
+    """
+    Get real-time current price from Yahoo Finance.
+    This endpoint provides accurate, up-to-date prices without API key requirements.
+
+    Args:
+        ticker: Stock ticker symbol (e.g., AAPL, MSFT, GOOGL)
+
+    Returns:
+        Current price data with change information
+    """
+    global market_data_agent
+
+    if not market_data_agent:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Market data service not initialized"
+        )
+
+    try:
+        ticker = ticker.upper()
+        logger.info(f"📊 Current price request for {ticker} via Yahoo Finance")
+
+        price_data = market_data_agent.get_current_price_yahoo(ticker)
+
+        if price_data:
+            return APIResponse(
+                success=True,
+                data=price_data
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Could not fetch current price for {ticker}"
+            )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in current price endpoint: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch current price: {str(e)}"
+        )
+
+
+@app.get(
     "/",
     response_model=APIResponse,
     summary="API Info",

@@ -1,3 +1,9 @@
+// Safe number formatting helper
+const safeFormat = (val, decimals = 2) => {
+  const num = parseFloat(val)
+  return isNaN(num) ? '0.00' : num.toFixed(decimals)
+}
+
 /**
  * MacroRegimeCardCompact Component
  * Compact sidebar version for the new layout
@@ -40,7 +46,7 @@ export default function MacroRegimeCardCompact({ macro }) {
           {macro.regime}
         </p>
         <p className="text-xs text-gray-500">
-          {macro.confidence != null ? (macro.confidence * 100).toFixed(0) : 'N/A'}% confidence
+          {macro.confidence != null ? safeFormat(macro.confidence * 100, 0) : 'N/A'}% confidence
         </p>
       </div>
 
@@ -54,7 +60,7 @@ export default function MacroRegimeCardCompact({ macro }) {
               <span className={`font-mono font-semibold ${
                 value > 0 ? 'text-fintech-green' : value < 0 ? 'text-fintech-red' : 'text-gray-400'
               }`}>
-                {value != null ? `${value > 0 ? '+' : ''}${value.toFixed(2)}%` : 'N/A'}
+                {value != null ? `${value > 0 ? '+' : ''}${safeFormat(value)}%` : 'N/A'}
               </span>
             </div>
           ))}
