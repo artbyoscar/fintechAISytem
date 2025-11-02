@@ -30,7 +30,7 @@ export default function MacroRegimeCardCompact({ macro }) {
   }
 
   return (
-    <div className="bg-fintech-card border border-fintech-border rounded-lg p-4">
+    <div className="card-glass animate-slide-up">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
           Macro Regime

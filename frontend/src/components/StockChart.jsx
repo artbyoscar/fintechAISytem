@@ -677,17 +677,18 @@ export default function StockChart({ ticker, onPriceUpdate }) {
               name="Close"
             />
 
-            {/* Moving Averages */}
+            {/* Moving Averages - Enhanced Visibility */}
             {showSMA20 && dataWithIndicators.some(p => p.sma20 != null) && (
               <Line
                 yAxisId="price"
                 type="monotone"
                 dataKey="sma20"
-                stroke="#1a659e"
-                strokeWidth={2}
+                stroke="#00d4ff"
+                strokeWidth={2.5}
                 dot={false}
                 name="SMA(20)"
                 connectNulls={true}
+                strokeOpacity={0.9}
               />
             )}
             {showSMA50 && dataWithIndicators.some(p => p.sma50 != null) && (
@@ -695,11 +696,12 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 yAxisId="price"
                 type="monotone"
                 dataKey="sma50"
-                stroke="#ffc400"
-                strokeWidth={2}
+                stroke="#ff9500"
+                strokeWidth={2.5}
                 dot={false}
                 name="SMA(50)"
                 connectNulls={true}
+                strokeOpacity={0.9}
               />
             )}
             {showSMA200 && dataWithIndicators.some(p => p.sma200 != null) && (
@@ -707,11 +709,12 @@ export default function StockChart({ ticker, onPriceUpdate }) {
                 yAxisId="price"
                 type="monotone"
                 dataKey="sma200"
-                stroke="#9c27b0"
-                strokeWidth={2}
+                stroke="#a855f7"
+                strokeWidth={2.5}
                 dot={false}
                 name="SMA(200)"
                 connectNulls={true}
+                strokeOpacity={0.9}
               />
             )}
           </ComposedChart>

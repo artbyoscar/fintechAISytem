@@ -4,57 +4,109 @@
 
 @layer base {
   body {
-    @apply bg-terminal-bg text-terminal-text font-mono antialiased;
+    @apply bg-fintech-bg text-white font-sans antialiased;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(102, 126, 234, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
+    background-attachment: fixed;
   }
 }
 
 @layer components {
+  /* Glass Morphism Card */
   .card {
-    @apply bg-terminal-bg-light border border-terminal-border rounded-lg p-6 shadow-lg;
+    @apply bg-fintech-card border border-fintech-border rounded-lg p-4 shadow-lg;
   }
 
+  .card-glass {
+    background: rgba(22, 27, 34, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    @apply rounded-lg p-4 shadow-2xl;
+    box-shadow:
+      0 8px 32px 0 rgba(0, 0, 0, 0.37),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .card-glass:hover {
+    border-color: rgba(0, 212, 255, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Modern Buttons */
   .btn-primary {
-    @apply bg-terminal-orange hover:bg-terminal-orange-light text-white font-semibold py-2 px-6 rounded-md transition-all duration-200 ease-in-out;
+    @apply text-white font-semibold py-2 px-6 rounded-md transition-all duration-300;
+    background: linear-gradient(135deg, #00d4ff 0%, #a855f7 100%);
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
   }
 
   .btn-secondary {
-    @apply bg-terminal-border hover:bg-terminal-blue text-terminal-text font-semibold py-2 px-6 rounded-md transition-all duration-200 ease-in-out;
+    @apply bg-fintech-card text-white font-semibold py-2 px-6 rounded-md transition-all duration-300;
   }
 
+  .btn-secondary:hover {
+    background: rgba(0, 212, 255, 0.2);
+  }
+
+  /* Modern Input */
   .input-field {
-    @apply bg-terminal-bg-light border border-terminal-border rounded-md px-4 py-2 text-terminal-text focus:outline-none focus:ring-2 focus:ring-terminal-orange focus:border-transparent;
+    @apply bg-fintech-card border border-fintech-border rounded-md px-4 py-2 text-white;
+    @apply focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  .input-field:focus {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+  }
+
+  /* Status Colors */
   .status-bullish {
-    @apply text-terminal-green-light;
+    @apply text-fintech-green;
   }
 
   .status-bearish {
-    @apply text-terminal-red-light;
+    @apply text-fintech-red;
   }
 
   .status-neutral {
-    @apply text-terminal-yellow-light;
+    @apply text-fintech-orange;
+  }
+
+  /* Hero Price with Gradient */
+  .price-hero {
+    @apply text-5xl font-bold font-mono;
+    background: linear-gradient(135deg, #00d4ff 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
 
-/* Custom scrollbar */
+/* Modern Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: rgba(10, 14, 26, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 4px;
+  background: linear-gradient(135deg, #00d4ff 0%, #a855f7 100%);
+  border-radius: 10px;
+  border: 2px solid rgba(10, 14, 26, 0.5);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: linear-gradient(135deg, #00d4ff 20%, #a855f7 120%);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
 }
 
 /* Ticker tape animation */

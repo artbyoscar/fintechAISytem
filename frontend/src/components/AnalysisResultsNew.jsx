@@ -119,19 +119,19 @@ export default function AnalysisResultsNew({ result }) {
               )}
             </div>
 
-            {/* Price Display */}
+            {/* Price Display - Modern Hero Price with Gradient */}
             <div className="flex items-baseline gap-4">
               <div className="text-right">
-                <div className="text-2xl font-bold text-white font-mono">
+                <div className="price-hero">
                   {currentPrice != null ? `$${formatPrice(currentPrice)}` : 'Loading...'}
                 </div>
                 {priceChange && (
-                  <div className={`text-sm font-semibold ${priceChange.percent >= 0 ? 'text-fintech-green' : 'text-fintech-red'}`}>
+                  <div className={`text-sm font-semibold mt-1 ${priceChange.percent >= 0 ? 'text-fintech-green' : 'text-fintech-red'}`}>
                     {priceChange.percent >= 0 ? '+' : ''}${formatPrice(Math.abs(priceChange.amount))} ({priceChange.percent >= 0 ? '+' : ''}{formatPercent(priceChange.percent)}%)
                   </div>
                 )}
                 {!priceChange && currentPrice == null && (
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 mt-1">
                     Fetching price...
                   </div>
                 )}

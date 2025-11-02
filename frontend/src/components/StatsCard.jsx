@@ -57,7 +57,7 @@ export default function StatsCard({ result }) {
   }
 
   return (
-    <div className="bg-fintech-card border border-fintech-border rounded-lg p-4">
+    <div className="card-glass animate-slide-up">
       <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
         Quick Stats
       </h3>
